@@ -1,4 +1,4 @@
-# secure_framework_app
+# Secure Framework App
 
 A new Flutter project.
 
