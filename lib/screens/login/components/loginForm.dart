@@ -7,6 +7,7 @@ import 'package:secure_framework_app/components/formError.dart';
 import 'package:secure_framework_app/components/defaultButton.dart';
 import 'package:secure_framework_app/repository/loginRepo.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 
 
 Future<void> fetchNonceAndLogin(String email, String password) async {
@@ -101,6 +102,8 @@ class _LoginFormState extends State<LoginForm> {
                 print("Password: $password");
                 print("Hashed Password: $hashedPassword");
                 fetchNonceAndLogin(email, hashedPassword.toString());
+
+                Navigator.pushNamed(context, '/home');
               }
             },
           ),
