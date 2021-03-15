@@ -20,8 +20,8 @@ Future<void> fetchNonceAndLogin(String email, String password) async {
 
   /***** SECOND PART *****/
   // Encode the key and IV
-  var encodedKey = base64.encode(utf8.encode(password));
-  var encodedIV = base64.encode(utf8.encode(IVKey));
+  var encodedKey = base64.encode(utf8.encode(password.substring(0, 32)));
+  var encodedIV = base64.encode(utf8.encode(password.substring(32, 48)));
 
   // Determine key and IV
   final key = encrypt.Key.fromBase64(encodedKey);
@@ -40,6 +40,11 @@ Future<void> fetchNonceAndLogin(String email, String password) async {
 
   encryptedMasterKey = encrypt.Encrypted.fromBase64(encryptedMasterKey);
   var masterKey = encrypter.decrypt(encryptedMasterKey, iv: iv);
+
+  // TODO: Arrange the masterKey 
+  // AES Key: 0-32 bytes
+  // IV: 32-48 bytes
+  // HMAC: 48-80 bytes
   print("Master Key: " + masterKey);
 
   // Save Master Key to the storage (cache)
@@ -98,7 +103,7 @@ class _LoginFormState extends State<LoginForm> {
                 print("Email: $email");
 
                 var bytes_1 = utf8.encode(password);
-                var hashedPassword = md5.convert(bytes_1);
+                var hashedPassword = sha512.convert(bytes_1);
                 print("Password: $password");
                 print("Hashed Password: $hashedPassword");
                 fetchNonceAndLogin(email, hashedPassword.toString());

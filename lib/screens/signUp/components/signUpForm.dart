@@ -54,7 +54,7 @@ class _SignUpFormState extends State<SignUpForm> {
                 // Prepare the data
                 // Hash the password before sending to the server
                 var bytes_1 = utf8.encode(password);
-                var hashedPassword = md5.convert(bytes_1);
+                var hashedPassword = sha512.convert(bytes_1);
                 // Type of hashedPassword: Digest
 
                 // print("Password: ${password}");
