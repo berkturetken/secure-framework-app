@@ -38,9 +38,9 @@ Future<void> encryptMessage(String message) async {
   var data = encrypted.base64 + hmac;
   print("Sent data: " + data);
   
-  // Sending the light message and waiting for response
-  Map jsonResponse = await sendMessage(data, "phil@gmail.com");
-  var response = jsonResponse["body"];
+  // Right now MANUALLY - Sending the light message and waiting for response
+  Map jsonResponse = await sendMessage(data, "claire@gmail.com");
+  var response = jsonResponse["message"];
   print("Response: " + response);
 }
 

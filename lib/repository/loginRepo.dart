@@ -8,7 +8,7 @@ import 'package:encrypt/encrypt.dart' as encrypt;
 Future<Map> getNonce(String email) async {
   var responseJson;
   final body = {
-    "userEmail": email
+    "email": email
   };
   final jsonString = json.encode(body);
 
@@ -29,7 +29,7 @@ Future<Map> getNonce(String email) async {
 Future<Map> validateLogin(String email, String nonce) async {
   var responseJson;
   final body = {
-    "userEmail": email,
+    "email": email,
     "nonce": nonce
   };
   final jsonString = json.encode(body);

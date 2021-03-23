@@ -14,7 +14,7 @@ Future<void> fetchNonceAndLogin(String email, String password) async {
   /***** FIRST PART *****/
   Map jsonResponse = await getNonce(email);
 
-  nonce = jsonResponse["body"];
+  nonce = jsonResponse["message"];
   print("Nonce: " + nonce);
 
 
@@ -36,7 +36,7 @@ Future<void> fetchNonceAndLogin(String email, String password) async {
   print(encrypted.base64);
 
   Map jsonResponse2 = await validateLogin(email, encrypted.base64);
-  var encryptedMasterKey = jsonResponse2["body"]["MasterKey"];
+  var encryptedMasterKey = jsonResponse2["message"];
 
   encryptedMasterKey = encrypt.Encrypted.fromBase64(encryptedMasterKey);
   var masterKey = encrypter.decrypt(encryptedMasterKey, iv: iv);

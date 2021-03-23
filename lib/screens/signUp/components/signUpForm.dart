@@ -64,7 +64,7 @@ class _SignUpFormState extends State<SignUpForm> {
                 var data = {
                   'name': name,
                   'surname': surname,
-                  'mail': email,
+                  'email': email,
                   'productCode': productCode,
                   'password': hashedPassword.toString()
                 };
