@@ -76,6 +76,27 @@ class _SignUpFormState extends State<SignUpForm> {
               }
             },
           ),
+          SizedBox(
+            height: 20,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Already have an account? ",
+                style: TextStyle(fontSize: 16),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, '/login');
+                },
+                child: Text(
+                  "Login",
+                  style: TextStyle(fontSize: 16, color: Colors.lightBlue),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

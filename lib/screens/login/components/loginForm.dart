@@ -112,6 +112,27 @@ class _LoginFormState extends State<LoginForm> {
               }
             },
           ),
+          SizedBox(
+            height: 20,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Need an account? ",
+                style: TextStyle(fontSize: 16),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, '/');
+                },
+                child: Text(
+                  "Sign Up",
+                  style: TextStyle(fontSize: 16, color: Colors.lightBlue),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

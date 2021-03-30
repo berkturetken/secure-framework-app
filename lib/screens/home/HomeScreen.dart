@@ -87,6 +87,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         status = val;
                         print(status);
+                        if (status) {
+                          var message = {
+                            "light": 1,
+                          };
+                          var formattedMessage = json.encode(message);
+                          encryptMessage(formattedMessage);
+                          print("Formatted Message is: " + formattedMessage);
+                        }
+                        else {
+                          var message = {
+                            "light": 0,
+                          };
+                          var formattedMessage = json.encode(message);
+                          encryptMessage(formattedMessage);
+                          print("Formatted Message is: " + formattedMessage);
+                        }
                       });
                     },
                   ),
