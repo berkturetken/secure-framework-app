@@ -47,11 +47,12 @@ Future<void> encryptAndSend(String plainText) async {
 }
 
 
-Future<Map> sendMessage(String message, String email) async {
+Future<Map> sendMessage(String message, String email, String productCode) async {
   var responseJson;
   final body = {
+    "email": email,
+    "productCode": productCode,
     "message": message,
-    "email": email
   };
   final jsonString = json.encode(body);
   

@@ -4,7 +4,6 @@ import 'package:secure_framework_app/components/constants.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import 'package:flutter_switch/flutter_switch.dart';
 
 import 'package:secure_framework_app/repository/encryptionRepo.dart';
 
@@ -40,8 +39,9 @@ Future<void> encryptMessage(String message) async {
   var data = encrypted.base64 + hmac;
   print("Sent data: " + data);
 
-  // Right now MANUALLY - Sending the light message and waiting for response
-  Map jsonResponse = await sendMessage(data, "claire@gmail.com");
+  // Right now: MAIL and Product Code is coded MANUALLY 
+  // Sending the light message and waiting for response
+  Map jsonResponse = await sendMessage(data, "claire@gmail.com", "6AOLWR912");
   var response = jsonResponse["message"];
   print("Response: " + response);
 }
