@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/components/formError.dart';
 import 'package:secure_framework_app/components/defaultButton.dart';
 import 'package:secure_framework_app/repository/loginRepo.dart';
-import 'package:encrypt/encrypt.dart' as encrypt;
-import 'package:secure_framework_app/screens/home/HomeScreen.dart';
+import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 
 
 Future<void> fetchNonceAndLogin(String email, String password) async {
@@ -17,43 +15,22 @@ Future<void> fetchNonceAndLogin(String email, String password) async {
   nonce = jsonResponse["message"];
   print("Nonce: " + nonce);
 
-
   /***** SECOND PART *****/
   // Encode the key and IV
   var encodedKey = base64.encode(utf8.encode(password.substring(0, 32)));
   var encodedIV = base64.encode(utf8.encode(password.substring(32, 48)));
+  
+  // Encrypt the nonce
+  String encryptedNonce = encryption(nonce, encodedKey, encodedIV);
+  print("Encrypted Nonce (Key is the hashed password): " + encryptedNonce);
 
-  // Determine key and IV
-  final key = encrypt.Key.fromBase64(encodedKey);
-  final iv = encrypt.IV.fromBase64(encodedIV);
-
-  // Create an encrypter with the key and set the mode as CBC (Cipher Block Chaining)
-  final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
-
-  // Encrypt the plaintext with iv
-  final encrypted = encrypter.encrypt(nonce, iv: iv);
-  print("Encrypted Nonce (Key is the hashed password):");
-  print(encrypted.base64);
-
-  Map jsonResponse2 = await validateLogin(email, encrypted.base64);
+  Map jsonResponse2 = await validateLogin(email, encryptedNonce);
   var encryptedMasterKey = jsonResponse2["message"];
+  String masterKey = decryption(encryptedMasterKey, encodedKey, encodedIV);
 
-  encryptedMasterKey = encrypt.Encrypted.fromBase64(encryptedMasterKey);
-  var masterKey = encrypter.decrypt(encryptedMasterKey, iv: iv);
-
-  // TODO: Arrange the masterKey 
-  // AES Key: 0-32 bytes
-  // IV: 32-48 bytes
-  // HMAC: 48-80 bytes
   print("Master Key: " + masterKey);
 
-  // Save Master Key to the storage (cache)
-  final storage = Storage;
-  await storage.write(key: "masterKey", value: masterKey);
-
-  // Read Master Key from the storage
-  var readMasterKey = await storage.read(key: "masterKey");
-  print(readMasterKey);
+  arrangeMasterKey(masterKey);
 }
 
 

@@ -1,11 +1,7 @@
-import 'dart:typed_data';
-import 'package:encrypt/encrypt_io.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypt/encrypt.dart' as e;
-import 'package:secure_framework_app/cryptoData/plainText.dart';
 import 'dart:convert';
-// import 'package:rsa_encrypt/rsa_encrypt.dart';
 
 
 Future<void> encryptAndSend(String plainText) async {
