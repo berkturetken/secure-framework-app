@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:secure_framework_app/screens/home/services/ProductData.dart';
+
+/*
+  Name and Surname can be added later
+*/
 
 class User with ChangeNotifier {
-  //final String name;
-  //final String surname;
   final String email;
-  final List<String> productCodes;
+  final List<Product> products;
   final String masterKey;
 
   User({
-    //@required this.name,
-    //@required this.surname,
     @required this.email,
-    @required this.productCodes,
+    this.products,
     @required this.masterKey
   });
 }

@@ -7,22 +7,20 @@ import 'package:secure_framework_app/repository/encryptionRepo.dart';
 
 Future<void> sendCommand(String command) async {
   final storage = Storage;
-  var encodedKey = await storage.read(key: "AES-Key");
-  var encodedIV = await storage.read(key: "IV");
-  var encodedPreHMAC = await storage.read(key: "Pre-HMAC");
+  var aesKey = await storage.read(key: "AES-Key");
+  var iv = await storage.read(key: "IV");
+  var hmacKey = await storage.read(key: "HMAC-Key");
 
-  String encryptedCommand = encryption(command, encodedKey, encodedIV);
+  String encryptedCommand = encryption(command, aesKey, iv);
   print("Encrypted Message: " + encryptedCommand);
 
-  String arrangedCommand = arrangeCommand(encryptedCommand, command, encodedPreHMAC);
+  String arrangedCommand = arrangeCommand(encryptedCommand, command, hmacKey);
 
   // Right now: MAIL and Product Code is coded MANUALLY 
   // Sending the light message and waiting for response
   Map jsonResponse = await sendMessage(arrangedCommand, "claire@gmail.com", "6AOLWR912");
   var response = jsonResponse["message"];
 
-  // Currently, there is a PROBLEM with the response: 
-  // "message: Error while decrypting the command!"
   print("Response: " + response);
 }
 

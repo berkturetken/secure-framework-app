@@ -12,7 +12,7 @@ class UserProvider with ChangeNotifier {
 
     User user = new User(
       email: email,
-      productCodes: null,
+      products: null,
       masterKey: jsonResponse["message"],
     );
 

@@ -3,30 +3,38 @@ import 'dart:convert';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:crypto/crypto.dart';
 
-String decryption(String cipherText, String encodedKey, String encodedIV) {
-  // Preparing the key and the IV
-  final key = e.Key.fromBase64(encodedKey);
-  final iv = e.IV.fromBase64(encodedIV);
+String decryption(String cipherText, String preKey, String preIV) {
+  // Encode the key and IV
+  var encodedKey = utf8.encode(preKey);
+  var encodedIV = utf8.encode(preIV);
+  
+  // Preparing the key and IV
+  final key = e.Key(encodedKey);
+  final iv = e.IV(encodedIV);
   
   // Create an encrypter with the key and set the mode as CBC (Cipher Block Chaining)
   final obj = e.Encrypter(e.AES(key, mode: e.AESMode.cbc));
   
-  e.Encrypted ct = e.Encrypted.fromBase64(cipherText);
+  e.Encrypted ct = e.Encrypted.fromBase64(cipherText);    // ct stands for CipherText
   String plainText = obj.decrypt(ct, iv: iv);
   
   return plainText;
 }
 
-String encryption(String plainText, String encodedKey, encodedIV) {
-  // Preparing the key and the IV
-  final key = e.Key.fromBase64(encodedKey);
-  final iv = e.IV.fromBase64(encodedIV);
+String encryption(String plainText, String preKey, String preIV) {
+  // Encode the key and IV
+  var encodedKey = utf8.encode(preKey);
+  var encodedIV = utf8.encode(preIV);
+  
+  // Preparing the key and IV
+  final key = e.Key(encodedKey);
+  final iv = e.IV(encodedIV);
 
   // Create an encrypter with the key and set the mode as CBC (Cipher Block Chaining)
   final obj = e.Encrypter(e.AES(key, mode: e.AESMode.cbc));
 
   // Encrypt and convert to the string
-  e.Encrypted pt = obj.encrypt(plainText, iv: iv);
+  e.Encrypted pt = obj.encrypt(plainText, iv: iv);    // pt stands for PlainText
   String cipherText = pt.base64;
 
   return cipherText;
@@ -40,16 +48,20 @@ void arrangeMasterKey(String masterKey) async {
   --> HMAC:     48-80 bytes
   *****/
 
-  // Encode the key, IV, and HMAC
-  String encodedKey = base64.encode(utf8.encode(masterKey.substring(0, 32)));
-  String encodedIV = base64.encode(utf8.encode(masterKey.substring(32, 48)));
-  String encodedHmacKey = masterKey.substring(48, 80);
+  // Arrange the key, IV, and HMAC
+  String aesKey = masterKey.substring(0, 32);
+  String iv = masterKey.substring(32, 48);
+  String hmacKey = masterKey.substring(48, 80);
+  // For debugging purposes:
+  print("AES Key: " + aesKey);
+  print("AES IV: " + iv);
+  print("HMAC Key: " + hmacKey);
 
   // Save the above items to the flutter secure storage
   final storage = Storage;
-  await storage.write(key: "AES-Key", value: encodedKey);
-  await storage.write(key: "IV", value: encodedIV);
-  await storage.write(key: "Pre-HMAC", value: encodedHmacKey);
+  await storage.write(key: "AES-Key", value: aesKey);
+  await storage.write(key: "IV", value: iv);
+  await storage.write(key: "HMAC-Key", value: hmacKey);
 }
 
 String arrangeCommand(String cipherText, String plainText, String encodedPreHMAC) {
@@ -61,14 +73,14 @@ String arrangeCommand(String cipherText, String plainText, String encodedPreHMAC
   Digest digest = hmacSha256.convert(encodedMessage);
   String hmac = base64.encode(digest.bytes);
 
-  String encryptedCommand = cipherText + hmac;
+  String securedCommand = cipherText + hmac;
 
-  // For debugging
+  // For debugging purposes:
   print("HMAC: " + hmac);
   print("HMAC Length: " + hmac.length.toString());
-  print("To be sent Command: " + encryptedCommand);
-  print("Command Length: " + encryptedCommand.length.toString());
+  print("To be sent Command: " + securedCommand);
+  print("Command Length: " + securedCommand.length.toString());
 
-  return encryptedCommand;
+  return securedCommand;
 }
 

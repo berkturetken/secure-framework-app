@@ -16,17 +16,17 @@ Future<void> fetchNonceAndLogin(String email, String password) async {
   print("Nonce: " + nonce);
 
   /***** SECOND PART *****/
-  // Encode the key and IV
-  var encodedKey = base64.encode(utf8.encode(password.substring(0, 32)));
-  var encodedIV = base64.encode(utf8.encode(password.substring(32, 48)));
+  // Arrange the key and IV
+  var key = password.substring(0, 32);
+  var iv = password.substring(32, 48);
   
   // Encrypt the nonce
-  String encryptedNonce = encryption(nonce, encodedKey, encodedIV);
+  String encryptedNonce = encryption(nonce, key, iv);
   print("Encrypted Nonce (Key is the hashed password): " + encryptedNonce);
 
   Map jsonResponse2 = await validateLogin(email, encryptedNonce);
   var encryptedMasterKey = jsonResponse2["message"];
-  String masterKey = decryption(encryptedMasterKey, encodedKey, encodedIV);
+  String masterKey = decryption(encryptedMasterKey, key, iv);
 
   print("Master Key: " + masterKey);
 
