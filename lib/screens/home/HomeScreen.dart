@@ -7,16 +7,16 @@ import 'package:secure_framework_app/repository/encryptionRepo.dart';
 
 Future<void> sendCommand(String command) async {
   final storage = Storage;
-  var aesKey = await storage.read(key: "AES-Key");
-  var iv = await storage.read(key: "IV");
-  var hmacKey = await storage.read(key: "HMAC-Key");
+  String aesKey = await storage.read(key: "AES-Key");
+  String iv = await storage.read(key: "IV");
+  String hmacKey = await storage.read(key: "HMAC-Key");
 
   String encryptedCommand = encryption(command, aesKey, iv);
   print("Encrypted Message: " + encryptedCommand);
 
   String arrangedCommand = arrangeCommand(encryptedCommand, command, hmacKey);
 
-  // Right now: MAIL and Product Code is coded MANUALLY 
+  // MAIL and PRODUCT CODE is hard-coded for now!!! 
   // Sending the light message and waiting for response
   Map jsonResponse = await sendMessage(arrangedCommand, "claire@gmail.com", "6AOLWR912");
   var response = jsonResponse["message"];
@@ -25,6 +25,8 @@ Future<void> sendCommand(String command) async {
 }
 
 class HomeScreen extends StatefulWidget {
+  static const routeName = "/home";
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }

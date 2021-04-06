@@ -1,52 +1,26 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/components/formError.dart';
 import 'package:secure_framework_app/components/defaultButton.dart';
-import 'package:secure_framework_app/repository/loginRepo.dart';
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
-
-
-Future<void> fetchNonceAndLogin(String email, String password) async {
-  /***** FIRST PART *****/
-  Map jsonResponse = await getNonce(email);
-
-  nonce = jsonResponse["message"];
-  print("Nonce: " + nonce);
-
-  /***** SECOND PART *****/
-  // Arrange the key and IV
-  var key = password.substring(0, 32);
-  var iv = password.substring(32, 48);
-  
-  // Encrypt the nonce
-  String encryptedNonce = encryption(nonce, key, iv);
-  print("Encrypted Nonce (Key is the hashed password): " + encryptedNonce);
-
-  Map jsonResponse2 = await validateLogin(email, encryptedNonce);
-  var encryptedMasterKey = jsonResponse2["message"];
-  String masterKey = decryption(encryptedMasterKey, key, iv);
-
-  print("Master Key: " + masterKey);
-
-  arrangeMasterKey(masterKey);
-}
-
+import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
+import 'package:provider/provider.dart';
+import 'package:secure_framework_app/screens/login/services/UserData.dart';
+import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 
 class LoginForm extends StatefulWidget {
+  static const routeName = "/login";
+
   @override
   _LoginFormState createState() => _LoginFormState();
 }
 
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
-  
-  String email;
-  String password;
-  // bool rememberMe = false;
- 
-  final List<String> errors = [];  
+
+  String email, password;
+  final List<String> errors = [];
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -61,34 +35,13 @@ class _LoginFormState extends State<LoginForm> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                "Forgot your password?",
-                style: TextStyle(decoration: TextDecoration.underline)
-              ),
+              Text("Forgot your password?",
+                  style: TextStyle(decoration: TextDecoration.underline)),
             ],
           ),
           FormError(errors: errors),
           SizedBox(height: 20),
-          
-          DefaultButton(
-            text: "LOGIN",
-            buttonType: "Orange",
-            press: () {
-              if (_formKey.currentState.validate()) {
-                _formKey.currentState.save();
-                
-                print("Email: $email");
-
-                var bytes_1 = utf8.encode(password);
-                var hashedPassword = sha512.convert(bytes_1);
-                print("Password: $password");
-                print("Hashed Password: $hashedPassword");
-                fetchNonceAndLogin(email, hashedPassword.toString());
-
-                Navigator.pushNamed(context, '/home');
-              }
-            },
-          ),
+          _loginButton(),
           SizedBox(
             height: 20,
           ),
@@ -115,6 +68,48 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
+  Widget _loginButton() {
+    return isLoading
+        ? Center(child: CircularProgressIndicator())
+        : DefaultButton(
+            text: "LOGIN",
+            buttonType: "Orange",
+            press: () async {
+              if (_formKey.currentState.validate()) {
+                _formKey.currentState.save();
+                setState(() {
+                  isLoading = true;
+                });
+              }
+
+              try {
+                print("Email: $email");
+                String hashedPassword = passwordHashing(password);
+
+                await Provider.of<UserProvider>(context, listen: false)
+                    .fetchAndSetUser(email, hashedPassword)
+                    .then((_) {});
+
+                print("Navigating to the home screen");
+                Navigator.of(context).pushNamed(HomeScreen.routeName);
+                // Look for below code...
+                // setState(() {
+                //   isLoading = false;
+                // });
+
+                final userProvider = Provider.of<UserProvider>(context, listen: false);
+                User currentUser = userProvider.user;
+              } 
+              catch (e) {
+                setState(() {
+                  isLoading = false;
+                });
+                print("An error occured: " + e.toString());
+              }
+            },
+          );
+  }
+
   // Email Form Field
   TextFormField buildEmailFormField() {
     return TextFormField(
@@ -125,7 +120,8 @@ class _LoginFormState extends State<LoginForm> {
           setState(() {
             errors.remove(EmailNullError);
           });
-        } else if (emailValidationRegExp.hasMatch(value) && errors.contains(InvalidEmailError)) {
+        } else if (emailValidationRegExp.hasMatch(value) &&
+            errors.contains(InvalidEmailError)) {
           setState(() {
             errors.remove(InvalidEmailError);
           });
@@ -137,7 +133,8 @@ class _LoginFormState extends State<LoginForm> {
           setState(() {
             errors.add(EmailNullError);
           });
-        } else if (!emailValidationRegExp.hasMatch(value) && !errors.contains(InvalidEmailError)) {
+        } else if (!emailValidationRegExp.hasMatch(value) &&
+            !errors.contains(InvalidEmailError)) {
           setState(() {
             errors.add(InvalidEmailError);
           });

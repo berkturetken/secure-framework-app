@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'components/signUpForm.dart';
 
 class SignUpScreen extends StatelessWidget {
+  static const routeName = "/signUp";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

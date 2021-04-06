@@ -7,17 +7,17 @@ String decryption(String cipherText, String preKey, String preIV) {
   // Encode the key and IV
   var encodedKey = utf8.encode(preKey);
   var encodedIV = utf8.encode(preIV);
-  
+
   // Preparing the key and IV
   final key = e.Key(encodedKey);
   final iv = e.IV(encodedIV);
-  
+
   // Create an encrypter with the key and set the mode as CBC (Cipher Block Chaining)
   final obj = e.Encrypter(e.AES(key, mode: e.AESMode.cbc));
-  
-  e.Encrypted ct = e.Encrypted.fromBase64(cipherText);    // ct stands for CipherText
+
+  e.Encrypted ct = e.Encrypted.fromBase64(cipherText); // ct stands for CipherText
   String plainText = obj.decrypt(ct, iv: iv);
-  
+
   return plainText;
 }
 
@@ -25,7 +25,7 @@ String encryption(String plainText, String preKey, String preIV) {
   // Encode the key and IV
   var encodedKey = utf8.encode(preKey);
   var encodedIV = utf8.encode(preIV);
-  
+
   // Preparing the key and IV
   final key = e.Key(encodedKey);
   final iv = e.IV(encodedIV);
@@ -34,7 +34,7 @@ String encryption(String plainText, String preKey, String preIV) {
   final obj = e.Encrypter(e.AES(key, mode: e.AESMode.cbc));
 
   // Encrypt and convert to the string
-  e.Encrypted pt = obj.encrypt(plainText, iv: iv);    // pt stands for PlainText
+  e.Encrypted pt = obj.encrypt(plainText, iv: iv); // pt stands for PlainText
   String cipherText = pt.base64;
 
   return cipherText;
@@ -64,12 +64,12 @@ void arrangeMasterKey(String masterKey) async {
   await storage.write(key: "HMAC-Key", value: hmacKey);
 }
 
-String arrangeCommand(String cipherText, String plainText, String encodedPreHMAC) {
+String arrangeCommand(String cipherText, String plainText, String hmacKey) {
   // Encrypt the messages which are going to send to the IoT device through AWS
-  var decodedHmac = utf8.encode(encodedPreHMAC);
+  var encodedHmac = utf8.encode(hmacKey);
   List<int> encodedMessage = utf8.encode(plainText);
 
-  Hmac hmacSha256 = Hmac(sha256, decodedHmac);        // HMAC-SHA256
+  Hmac hmacSha256 = Hmac(sha256, encodedHmac); // HMAC-SHA256
   Digest digest = hmacSha256.convert(encodedMessage);
   String hmac = base64.encode(digest.bytes);
 
@@ -84,3 +84,15 @@ String arrangeCommand(String cipherText, String plainText, String encodedPreHMAC
   return securedCommand;
 }
 
+String passwordHashing(String password) {
+  // Hashing with SHA-512
+  List<int> passwordBytes = utf8.encode(password);
+  Digest passwordHashedDigest = sha512.convert(passwordBytes);
+  
+  // For debugging
+  print("Password: $password");
+  print("Hashed Password: $passwordHashedDigest");
+
+  String passwordHashed = passwordHashedDigest.toString();
+  return passwordHashed;
+}
