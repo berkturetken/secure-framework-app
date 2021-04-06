@@ -2,6 +2,7 @@ import 'package:encrypt/encrypt.dart' as e;
 import 'dart:convert';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart';
 
 String decryption(String cipherText, String preKey, String preIV) {
   // Encode the key and IV
@@ -21,7 +22,7 @@ String decryption(String cipherText, String preKey, String preIV) {
   return plainText;
 }
 
-String encryption(String plainText, String preKey, String preIV) {
+String encryptionAES(String plainText, String preKey, String preIV) {
   // Encode the key and IV
   var encodedKey = utf8.encode(preKey);
   var encodedIV = utf8.encode(preIV);
@@ -34,8 +35,8 @@ String encryption(String plainText, String preKey, String preIV) {
   final obj = e.Encrypter(e.AES(key, mode: e.AESMode.cbc));
 
   // Encrypt and convert to the string
-  e.Encrypted pt = obj.encrypt(plainText, iv: iv); // pt stands for PlainText
-  String cipherText = pt.base64;
+  e.Encrypted ct = obj.encrypt(plainText, iv: iv); // pt stands for PlainText
+  String cipherText = ct.base64;
 
   return cipherText;
 }
@@ -95,4 +96,18 @@ String passwordHashing(String password) {
 
   String passwordHashed = passwordHashedDigest.toString();
   return passwordHashed;
+}
+
+Future<String> encryptionRSA (String data) async {
+  // parseKeyFromFile() is not working! --> await parseKeyFromFile('assets/my_rsa_public.pem')
+  final publicPem = await rootBundle.loadString('assets/my_rsa_public.pem');
+  final publicKey = e.RSAKeyParser().parse(publicPem);
+
+  final obj = e.Encrypter(e.RSA(publicKey: publicKey));
+  e.Encrypted ct = obj.encrypt(data);
+  String cipherText = ct.base64;
+
+  // For debugging
+  print("Encrypted Message: " + cipherText);
+  return cipherText;
 }

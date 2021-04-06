@@ -3,22 +3,25 @@ import 'package:flutter_switch/flutter_switch.dart';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'dart:convert';
-import 'package:secure_framework_app/repository/encryptionRepo.dart';
+import 'package:secure_framework_app/repository/operationsRepo.dart';
+import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
+import 'package:provider/provider.dart';
+import 'package:secure_framework_app/screens/login/services/UserData.dart';
 
-Future<void> sendCommand(String command) async {
+Future<void> sendCommand(String command, String email) async {
   final storage = Storage;
   String aesKey = await storage.read(key: "AES-Key");
   String iv = await storage.read(key: "IV");
   String hmacKey = await storage.read(key: "HMAC-Key");
 
-  String encryptedCommand = encryption(command, aesKey, iv);
+  String encryptedCommand = encryptionAES(command, aesKey, iv);
   print("Encrypted Message: " + encryptedCommand);
 
   String arrangedCommand = arrangeCommand(encryptedCommand, command, hmacKey);
 
-  // MAIL and PRODUCT CODE is hard-coded for now!!! 
+  // PRODUCT CODE is hard-coded for now!!! 
   // Sending the light message and waiting for response
-  Map jsonResponse = await sendMessage(arrangedCommand, "claire@gmail.com", "6AOLWR912");
+  Map jsonResponse = await sendMessage(arrangedCommand, email, "6AOLWR912");
   var response = jsonResponse["message"];
 
   print("Response: " + response);
@@ -36,6 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    User user = userProvider.user; 
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -72,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             "light": 1,
                           };
                           var formattedMessage = json.encode(message);
-                          sendCommand(formattedMessage);
+                          sendCommand(formattedMessage, user.email);
                           print("Formatted Message is: " + formattedMessage);
                         }
                         else {
@@ -80,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             "light": 0,
                           };
                           var formattedMessage = json.encode(message);
-                          sendCommand(formattedMessage);
+                          sendCommand(formattedMessage, user.email);
                           print("Formatted Message is: " + formattedMessage);
                         }
                       });

@@ -3,8 +3,18 @@ import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/components/defaultButton.dart';
 import 'package:secure_framework_app/components/formError.dart';
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'package:secure_framework_app/repository/encryptionRepo.dart';
+import 'package:secure_framework_app/repository/signUpRepo.dart';
+import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
+import 'package:flutter/services.dart';
+import 'package:secure_framework_app/screens/login/components/loginForm.dart';
+import 'package:secure_framework_app/screens/login/loginScreen.dart';
+
+Future<void> beginSignUp(String data) async {
+  var encryptedData = await encryptionRSA(data);
+
+  Map jsonResponseFromSignUp = await signUp(encryptedData);
+
+}
 
 class SignUpForm extends StatefulWidget {
   @override
@@ -14,12 +24,7 @@ class SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<SignUpForm> {
   final _formKey = GlobalKey<FormState>();
   
-  String name;
-  String surname;
-  String email;
-  String productCode;
-  String password = "";
-  String confirmationPassword;
+  String name, surname, email, productCode, password = "", confirmationPassword;
 
   final List<String> errors = [];
 
@@ -51,34 +56,25 @@ class _SignUpFormState extends State<SignUpForm> {
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
                 
-                // Prepare the data
-                // Hash the password before sending to the server
-                var bytes_1 = utf8.encode(password);
-                var hashedPassword = sha512.convert(bytes_1);
-                // Type of hashedPassword: Digest
-
-                // print("Password: ${password}");
-                // print("Digest as bytes: ${hashedPassword.bytes}");
-                // print("Digest as hex string: $hashedPassword");
+                // Prepare the data - Hash the password before sending to the server 
+                String hashedPassword = passwordHashing(password);
 
                 var data = {
                   'name': name,
                   'surname': surname,
                   'email': email,
                   'productCode': productCode,
-                  'password': hashedPassword.toString()
+                  'password': hashedPassword
                 };
 
-                var formattedData = jsonEncode(data);
+                String formattedData = jsonEncode(data);
                 print(formattedData);
                 
-                encryptAndSend(formattedData);
+                beginSignUp(formattedData);
               }
             },
           ),
-          SizedBox(
-            height: 20,
-          ),
+          SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -88,7 +84,7 @@ class _SignUpFormState extends State<SignUpForm> {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, '/login');
+                  Navigator.of(context).pushNamed(LoginForm.routeName);
                 },
                 child: Text(
                   "Login",

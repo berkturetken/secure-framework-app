@@ -10,20 +10,21 @@ class UserProvider with ChangeNotifier {
 
   Future<void> fetchAndSetUser(String email, String password) async {
     String nonce, encryptedNonce, encryptedMasterKey, masterKey;
+    
     Map jsonResponsefromGetNonce = await getNonce(email);
-
     if (jsonResponsefromGetNonce != null) {
       nonce = jsonResponsefromGetNonce["message"];
     }
     print("Nonce: " + nonce);
 
+    // Kev and iv arrangement
     var key = password.substring(0, 32);
     var iv = password.substring(32, 48);
 
-    encryptedNonce = encryption(nonce, key, iv);
+    encryptedNonce = encryptionAES(nonce, key, iv);
     print("Encrypted Nonce (Key is the hashed password): " + encryptedNonce);
+    
     Map jsonResponseFromValidateLogin = await validateLogin(email, encryptedNonce);
-
     if (jsonResponseFromValidateLogin != null) {
       encryptedMasterKey = jsonResponseFromValidateLogin["message"];
     }

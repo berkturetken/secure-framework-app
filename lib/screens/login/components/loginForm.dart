@@ -7,6 +7,7 @@ import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
+import 'package:secure_framework_app/screens/signUp/signUpScreen.dart';
 
 class LoginForm extends StatefulWidget {
   static const routeName = "/login";
@@ -54,7 +55,7 @@ class _LoginFormState extends State<LoginForm> {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, '/');
+                  Navigator.of(context).pushNamed(SignUpScreen.routeName);
                 },
                 child: Text(
                   "Sign Up",
@@ -92,10 +93,9 @@ class _LoginFormState extends State<LoginForm> {
 
                 print("Navigating to the home screen");
                 Navigator.of(context).pushNamed(HomeScreen.routeName);
-                // Look for below code...
-                // setState(() {
-                //   isLoading = false;
-                // });
+                setState(() {
+                  isLoading = false;
+                });            
 
                 final userProvider = Provider.of<UserProvider>(context, listen: false);
                 User currentUser = userProvider.user;

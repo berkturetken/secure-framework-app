@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:secure_framework_app/components/constants.dart';
-import 'package:flutter/material.dart';
-import 'package:encrypt/encrypt.dart' as encrypt;
 
 Future<Map> getNonce(String email) async {
   var responseJson;
