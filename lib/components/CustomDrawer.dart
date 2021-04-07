@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:secure_framework_app/screens/productDetail.dart/ProductDetailScreen.dart';
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -48,19 +49,26 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 leading: Icon(Icons.home),
                 title: Text('Home Sweet Home'),
                 trailing: Icon(Icons.arrow_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).pushReplacementNamed(ProductDetailScreen.routeName);
+                  // Navigator.pop(context);
+                },
               ),
               ListTile(
                 leading: Icon(Icons.home),
                 title: Text('Summer House'),
                 trailing: Icon(Icons.arrow_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                },
               ),
               ListTile(
                 leading: Icon(Icons.home),
                 title: Text('Rented House-1'),
                 trailing: Icon(Icons.arrow_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),

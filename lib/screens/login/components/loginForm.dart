@@ -7,7 +7,7 @@ import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
-import 'package:secure_framework_app/screens/signUp/signUpScreen.dart';
+import 'package:secure_framework_app/screens/signUp/ownerSignUp/OwnerSignUpScreen.dart';
 
 class LoginForm extends StatefulWidget {
   static const routeName = "/login";
@@ -55,7 +55,7 @@ class _LoginFormState extends State<LoginForm> {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.of(context).pushNamed(SignUpScreen.routeName);
+                  Navigator.of(context).pushNamed(OwnerSignUpScreen.routeName);
                 },
                 child: Text(
                   "Sign Up",
@@ -92,15 +92,20 @@ class _LoginFormState extends State<LoginForm> {
                     .then((_) {});
 
                 print("Navigating to the home screen");
-                Navigator.of(context).pushNamed(HomeScreen.routeName);
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(),
+                    ),
+                    ModalRoute.withName(HomeScreen.routeName));
                 setState(() {
                   isLoading = false;
-                });            
+                });
 
-                final userProvider = Provider.of<UserProvider>(context, listen: false);
+                final userProvider =
+                    Provider.of<UserProvider>(context, listen: false);
                 User currentUser = userProvider.user;
-              } 
-              catch (e) {
+              } catch (e) {
                 setState(() {
                   isLoading = false;
                 });

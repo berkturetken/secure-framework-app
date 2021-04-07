@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:secure_framework_app/screens/login/components/loginForm.dart';
+import 'components/ownerSignUpForm.dart';
 
-class LoginScreen extends StatelessWidget {
+class OwnerSignUpScreen extends StatelessWidget {
+  static const routeName = "/ownerSignUp";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: Text("Login"),
+        automaticallyImplyLeading: false,
+        title: Center(
+          child: Text("Sign Up"),
+        ),
         backgroundColor: Colors.blue[900],
       ),
       body: SafeArea(
@@ -16,25 +20,26 @@ class LoginScreen extends StatelessWidget {
             padding: const EdgeInsets.all(18.0),
             child: SingleChildScrollView(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    margin: EdgeInsets.fromLTRB(0, 100, 0, 20),
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                     child: Text(
-                      "Whoever you are, come!",
-                      textAlign: TextAlign.end,
+                      "Owner",
+                      textAlign: TextAlign.start,
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 34,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                   ),
-                  LoginForm()
+                  OwnerSignUpForm(),
                 ],
               ),
-            )
+            ),
           ),
         ),
-      )
+      ),
     );
   }
 }

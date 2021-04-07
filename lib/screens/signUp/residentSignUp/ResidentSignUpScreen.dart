@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'components/signUpForm.dart';
+import 'components/residentSignUpForm.dart';
 
-class SignUpScreen extends StatelessWidget {
-  static const routeName = "/signUp";
+class ResidentSignUpScreen extends StatelessWidget {
+  static const routeName = "/residentSignUp";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Center(
-          child: Text("Secure Home"),
-        ),
+        centerTitle: true,
+        title: Text("Sign Up"),
         backgroundColor: Colors.blue[900],
       ),
       body: SafeArea(
@@ -20,20 +18,20 @@ class SignUpScreen extends StatelessWidget {
             padding: const EdgeInsets.all(18.0),
             child: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                     child: Text(
-                      "Sign Up",
-                      textAlign: TextAlign.end,
+                      "Resident",
+                      textAlign: TextAlign.start,
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 34,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                   ),
-                  SignUpForm(),
+                  ResidentSignUpForm(),
                 ],
               ),
             ),

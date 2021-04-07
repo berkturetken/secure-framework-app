@@ -7,22 +7,22 @@ import 'package:secure_framework_app/repository/signUpRepo.dart';
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'package:flutter/services.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
+import 'package:secure_framework_app/screens/signUp/residentSignUp/ResidentSignUpScreen.dart';
 
 Future<void> beginSignUp(String data) async {
   var encryptedData = await encryptionRSA(data);
 
   Map jsonResponseFromSignUp = await signUp(encryptedData);
-
 }
 
-class SignUpForm extends StatefulWidget {
+class OwnerSignUpForm extends StatefulWidget {
   @override
-  _SignUpFormState createState() => _SignUpFormState();
+  _OwnerSignUpFormState createState() => _OwnerSignUpFormState();
 }
 
-class _SignUpFormState extends State<SignUpForm> {
+class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
   final _formKey = GlobalKey<FormState>();
-  
+
   String name, surname, email, productCode, password = "", confirmationPassword;
 
   final List<String> errors = [];
@@ -45,17 +45,15 @@ class _SignUpFormState extends State<SignUpForm> {
           SizedBox(height: 20),
           buildConfirmationPasswordFormField(),
           SizedBox(height: 10),
-          
           FormError(errors: errors),
           SizedBox(height: 15),
-          
           DefaultButton(
             text: "Create an Account",
             press: () {
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
-                
-                // Prepare the data - Hash the password before sending to the server 
+
+                // Prepare the data - Hash the password before sending to the server
                 String hashedPassword = passwordHashing(password);
 
                 var data = {
@@ -68,32 +66,39 @@ class _SignUpFormState extends State<SignUpForm> {
 
                 String formattedData = jsonEncode(data);
                 print(formattedData);
-                
+
                 beginSignUp(formattedData);
               }
             },
           ),
           SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Already have an account? ",
-                style: TextStyle(fontSize: 16),
-              ),
-              InkWell(
-                onTap: () {
-                  Navigator.of(context).pushNamed(LoginForm.routeName);
-                },
-                child: Text(
-                  "Login",
-                  style: TextStyle(fontSize: 16, color: Colors.lightBlue),
-                ),
-              ),
-            ],
-          ),
+          _customTextRouting("Already have an account? ", LoginForm.routeName, "Login"),
+          SizedBox(height: 10),
+          _customTextRouting("Are you a resident? ", ResidentSignUpScreen.routeName, "Sign Up"),
         ],
       ),
+    );
+  }
+
+  // Custom Text and Ink with Routing
+  Widget _customTextRouting(String text, String route, String inkText) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          text,
+          style: TextStyle(fontSize: 16),
+        ),
+        InkWell(
+          onTap: () {
+            Navigator.of(context).pushNamed(route);
+          },
+          child: Text(
+            inkText,
+            style: TextStyle(fontSize: 16, color: Colors.lightBlue),
+          ),
+        ),
+      ],
     );
   }
 
@@ -157,7 +162,8 @@ class _SignUpFormState extends State<SignUpForm> {
           setState(() {
             errors.remove(EmailNullError);
           });
-        } else if (emailValidationRegExp.hasMatch(value) && errors.contains(InvalidEmailError)) {
+        } else if (emailValidationRegExp.hasMatch(value) &&
+            errors.contains(InvalidEmailError)) {
           setState(() {
             errors.remove(InvalidEmailError);
           });
@@ -169,7 +175,8 @@ class _SignUpFormState extends State<SignUpForm> {
           setState(() {
             errors.add(EmailNullError);
           });
-        } else if (!emailValidationRegExp.hasMatch(value) && !errors.contains(InvalidEmailError)) {
+        } else if (!emailValidationRegExp.hasMatch(value) &&
+            !errors.contains(InvalidEmailError)) {
           setState(() {
             errors.add(InvalidEmailError);
           });
@@ -190,8 +197,8 @@ class _SignUpFormState extends State<SignUpForm> {
           setState(() {
             errors.remove(ProductCodeNullError);
           });
-        }
-        else if (value.length == 9 && errors.contains(InvalidProductCodeError)) {
+        } else if (value.length == 9 &&
+            errors.contains(InvalidProductCodeError)) {
           setState(() {
             errors.remove(InvalidProductCodeError);
           });
@@ -203,8 +210,8 @@ class _SignUpFormState extends State<SignUpForm> {
           setState(() {
             errors.add(ProductCodeNullError);
           });
-        }
-        else if(value.length != 9 && !errors.contains(InvalidProductCodeError)) {
+        } else if (value.length != 9 &&
+            !errors.contains(InvalidProductCodeError)) {
           setState(() {
             errors.add(InvalidProductCodeError);
           });
@@ -255,12 +262,12 @@ class _SignUpFormState extends State<SignUpForm> {
       obscureText: true,
       onSaved: (newValue) => confirmationPassword = newValue,
       onChanged: (value) {
-        if (value.isNotEmpty && errors.contains(ConfirmationPasswordNullError)) {
+        if (value.isNotEmpty &&
+            errors.contains(ConfirmationPasswordNullError)) {
           setState(() {
             errors.remove(ConfirmationPasswordNullError);
           });
-        }
-        else if (value == password && errors.contains(MatchPasswordError)) {
+        } else if (value == password && errors.contains(MatchPasswordError)) {
           setState(() {
             errors.remove(MatchPasswordError);
           });
@@ -272,8 +279,7 @@ class _SignUpFormState extends State<SignUpForm> {
           setState(() {
             errors.add(ConfirmationPasswordNullError);
           });
-        }
-        else if (value != password && !errors.contains(MatchPasswordError)) {
+        } else if (value != password && !errors.contains(MatchPasswordError)) {
           setState(() {
             errors.add(MatchPasswordError);
           });
@@ -298,7 +304,7 @@ class _SignUpFormState extends State<SignUpForm> {
       floatingLabelBehavior: FloatingLabelBehavior.always,
       contentPadding: EdgeInsets.symmetric(
         horizontal: 42,
-        vertical: 20,
+        vertical: 16,
       ),
       enabledBorder: outlineInputBorder,
       focusedBorder: outlineInputBorder,
