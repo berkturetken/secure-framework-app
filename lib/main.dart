@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
+import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
 import 'package:secure_framework_app/screens/productDetail.dart/ProductDetailScreen.dart';
@@ -16,10 +17,11 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(create: (context) => ProductProvider()),
         // TODO: Add ProductProvider() later!!!
       ],
       child: MaterialApp(
-        initialRoute: OwnerSignUpScreen.routeName,
+        initialRoute: LoginForm.routeName,
         routes: {
           OwnerSignUpScreen.routeName: (context) => OwnerSignUpScreen(),
           ResidentSignUpScreen.routeName: (context) => ResidentSignUpScreen(),
@@ -28,7 +30,6 @@ class MyApp extends StatelessWidget {
           ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
         },
       ),
-      
     );
   }
 }

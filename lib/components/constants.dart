@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Storage
@@ -6,7 +5,8 @@ final Storage = new FlutterSecureStorage();
 
 // Constants
 String nonce = "";
-const String IVKey = "this is an IV666"; 
+const String IVKey = "this is an IV666";
+const int HmacLength = 44;
 
 // ----- ERRORS -----
 

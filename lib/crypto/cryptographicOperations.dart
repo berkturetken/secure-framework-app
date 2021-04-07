@@ -4,6 +4,7 @@ import 'package:secure_framework_app/components/constants.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 
+
 String decryption(String cipherText, String preKey, String preIV) {
   // Encode the key and IV
   var encodedKey = utf8.encode(preKey);
@@ -21,6 +22,7 @@ String decryption(String cipherText, String preKey, String preIV) {
 
   return plainText;
 }
+
 
 String encryptionAES(String plainText, String preKey, String preIV) {
   // Encode the key and IV
@@ -41,6 +43,7 @@ String encryptionAES(String plainText, String preKey, String preIV) {
   return cipherText;
 }
 
+
 Future<String> encryptionRSA (String data) async {
   // parseKeyFromFile() is not working! --> await parseKeyFromFile('assets/my_rsa_public.pem')
   final publicPem = await rootBundle.loadString('assets/my_rsa_public.pem');
@@ -54,6 +57,7 @@ Future<String> encryptionRSA (String data) async {
   print("Encrypted Message: " + cipherText);
   return cipherText;
 }
+
 
 void arrangeMasterKey(String masterKey) async {
   /***** 
@@ -79,15 +83,10 @@ void arrangeMasterKey(String masterKey) async {
   await storage.write(key: "HMAC-Key", value: hmacKey);
 }
 
+
 String arrangeCommand(String cipherText, String plainText, String hmacKey) {
   // Encrypt the messages which are going to send to the IoT device through AWS
-  var encodedHmac = utf8.encode(hmacKey);
-  List<int> encodedMessage = utf8.encode(plainText);
-
-  Hmac hmacSha256 = Hmac(sha256, encodedHmac); // HMAC-SHA256
-  Digest digest = hmacSha256.convert(encodedMessage);
-  String hmac = base64.encode(digest.bytes);
-
+  String hmac = hmacing(plainText, hmacKey);  
   String securedCommand = cipherText + hmac;
 
   // For debugging purposes:
@@ -98,6 +97,7 @@ String arrangeCommand(String cipherText, String plainText, String hmacKey) {
 
   return securedCommand;
 }
+
 
 String passwordHashing(String password) {
   // Hashing with SHA-512
@@ -110,4 +110,15 @@ String passwordHashing(String password) {
 
   String passwordHashed = passwordHashedDigest.toString();
   return passwordHashed;
+}
+
+
+String hmacing(String plainText, String hmacKey) {
+  List<int> encodedHmac = utf8.encode(hmacKey);
+  List<int> encodedPlainText = utf8.encode(plainText);
+
+  Hmac hmacSha256 = Hmac(sha256, encodedHmac);
+  Digest digest = hmacSha256.convert(encodedPlainText);
+  String hmac = base64.encode(digest.bytes);
+  return hmac;
 }

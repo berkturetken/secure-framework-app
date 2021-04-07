@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/signUp/ownerSignUp/OwnerSignUpScreen.dart';
+import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 
 class LoginForm extends StatefulWidget {
   static const routeName = "/login";
@@ -98,13 +99,20 @@ class _LoginFormState extends State<LoginForm> {
                       builder: (context) => HomeScreen(),
                     ),
                     ModalRoute.withName(HomeScreen.routeName));
+
                 setState(() {
                   isLoading = false;
                 });
 
-                final userProvider =
-                    Provider.of<UserProvider>(context, listen: false);
+                final userProvider = Provider.of<UserProvider>(context, listen: false);
                 User currentUser = userProvider.user;
+
+                // Newly added (For trial)
+                await Provider.of<ProductProvider>(context, listen: false)
+                    .fetchAndGetProducts(email, currentUser)
+                    .then((_) {});
+
+
               } catch (e) {
                 setState(() {
                   isLoading = false;

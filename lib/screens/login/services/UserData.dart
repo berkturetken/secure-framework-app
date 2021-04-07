@@ -6,9 +6,9 @@ import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 */
 
 class User with ChangeNotifier {
-  final String email;
-  final List<Product> products;
-  final String masterKey;
+  String email;
+  List<Product> products;
+  String masterKey;
 
   User({
     @required this.email,

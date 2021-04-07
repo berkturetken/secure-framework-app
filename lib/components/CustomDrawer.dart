@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/productDetail.dart/ProductDetailScreen.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -37,7 +38,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             title: Text('Home Page'),
             trailing: Icon(Icons.arrow_right),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
             },
           ),
           ExpansionTile(
@@ -59,7 +60,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 title: Text('Summer House'),
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.of(context).pushReplacementNamed(ProductDetailScreen.routeName);
                 },
               ),
               ListTile(
