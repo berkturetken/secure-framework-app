@@ -41,6 +41,20 @@ String encryptionAES(String plainText, String preKey, String preIV) {
   return cipherText;
 }
 
+Future<String> encryptionRSA (String data) async {
+  // parseKeyFromFile() is not working! --> await parseKeyFromFile('assets/my_rsa_public.pem')
+  final publicPem = await rootBundle.loadString('assets/my_rsa_public.pem');
+  final publicKey = e.RSAKeyParser().parse(publicPem);
+
+  final obj = e.Encrypter(e.RSA(publicKey: publicKey));
+  e.Encrypted ct = obj.encrypt(data);
+  String cipherText = ct.base64;
+
+  // For debugging
+  print("Encrypted Message: " + cipherText);
+  return cipherText;
+}
+
 void arrangeMasterKey(String masterKey) async {
   /***** 
   Divide the masterKey as follows:
@@ -96,18 +110,4 @@ String passwordHashing(String password) {
 
   String passwordHashed = passwordHashedDigest.toString();
   return passwordHashed;
-}
-
-Future<String> encryptionRSA (String data) async {
-  // parseKeyFromFile() is not working! --> await parseKeyFromFile('assets/my_rsa_public.pem')
-  final publicPem = await rootBundle.loadString('assets/my_rsa_public.pem');
-  final publicKey = e.RSAKeyParser().parse(publicPem);
-
-  final obj = e.Encrypter(e.RSA(publicKey: publicKey));
-  e.Encrypted ct = obj.encrypt(data);
-  String cipherText = ct.base64;
-
-  // For debugging
-  print("Encrypted Message: " + cipherText);
-  return cipherText;
 }

@@ -6,9 +6,8 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text("Secure Home"),
-        ),
+        centerTitle: true,
+        title: Text("Secure Home"),
         backgroundColor: Colors.blue[900],
       ),
       body: SafeArea(

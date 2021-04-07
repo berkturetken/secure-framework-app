@@ -7,7 +7,6 @@ import 'package:secure_framework_app/repository/signUpRepo.dart';
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'package:flutter/services.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
-import 'package:secure_framework_app/screens/login/loginScreen.dart';
 
 Future<void> beginSignUp(String data) async {
   var encryptedData = await encryptionRSA(data);
