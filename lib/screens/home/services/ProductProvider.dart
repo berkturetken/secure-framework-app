@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'package:secure_framework_app/repository/operationsRepo.dart';
@@ -15,6 +16,7 @@ class ProductProvider with ChangeNotifier {
     List<Product> products = new List();
     String encryptedProducts, cipherText, plainText, key, iv, hmac, hmacKey, hmacCreatedByClient;
     int length, threshold;
+    List<dynamic> decodedPlainText;
 
     Map jsonResponseFromGetProducts = await getProducts(email);
     if (jsonResponseFromGetProducts != null) {
@@ -34,33 +36,25 @@ class ProductProvider with ChangeNotifier {
     plainText = decryption(cipherText, key, iv);
     hmacCreatedByClient = hmacing(plainText, hmacKey);
 
-    print("Coming HMAC: " + hmac);
-    print("Created HMAC: " + hmacCreatedByClient);
-
     if (hmacCreatedByClient != hmac) {
       print("HMACs are not matched!");
     }
     else {
       print("HMACs are matched.");
       print(plainText);
+      
+      decodedPlainText = jsonDecode(plainText);
+      for(var i=0; i < decodedPlainText.length; i++) {
+        Product tempProduct = new Product(
+          productCode: decodedPlainText[i]['productCode'],
+          productName: decodedPlainText[i]['productName'],
+          roleID: decodedPlainText[i]['roleId']
+        );
+
+        products.add(tempProduct);
+        user.products = products;
+      }
     }
-
-
-    // TODO List:
-    // After successful decryption
-    // Create a loop which creates tempProduct object in every iteration
-    // Then, add this product to products list!
-    
-    /*
-    Product tempProduct = new Product(
-      productCode: null,
-      productName: null,
-      roleID: null
-    );
-
-    products.add(tempProduct);
-    user.products = products;
-    */
     notifyListeners();
   }
 }

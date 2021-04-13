@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:secure_framework_app/screens/productDetail.dart/ProductDetailScreen.dart';
 import 'package:secure_framework_app/components/CustomDrawer.dart';
+import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = "/home";
@@ -15,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool status = false;
   Map<String, int> command = {};
-
+  
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -37,8 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ListView.builder(
                 physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
-                itemCount: 3,
-                itemBuilder: (context, index) => _myProductsCard(context),
+                itemCount: user.products.length,
+                itemBuilder: (context, index) => _myProductsCard(user.products[index], context),
               ),
             ],
           ),
@@ -48,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _myProductsCard(BuildContext context) {
+  Widget _myProductsCard(Product product, BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.33,
       child: Card(
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.only(top: 8.0, bottom: 0.0),
                     child: Text(
-                      "My Home",
+                      product.productName,
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -77,8 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     color: Colors.blue,
                     onPressed: () {
-                      Navigator.of(context)
-                          .pushNamed(ProductDetailScreen.routeName);
+                      Navigator.of(context).pushNamed(ProductDetailScreen.routeName);
                     },
                   ),
                 ],
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 20.0),
                 child: Text(
-                  "Product Code",
+                  product.productCode,
                   style: TextStyle(
                     fontSize: 18,
                   ),

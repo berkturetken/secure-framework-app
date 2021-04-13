@@ -92,18 +92,6 @@ class _LoginFormState extends State<LoginForm> {
                     .fetchAndSetUser(email, hashedPassword)
                     .then((_) {});
 
-                print("Navigating to the home screen");
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomeScreen(),
-                    ),
-                    ModalRoute.withName(HomeScreen.routeName));
-
-                setState(() {
-                  isLoading = false;
-                });
-
                 final userProvider = Provider.of<UserProvider>(context, listen: false);
                 User currentUser = userProvider.user;
 
@@ -112,7 +100,17 @@ class _LoginFormState extends State<LoginForm> {
                     .fetchAndGetProducts(email, currentUser)
                     .then((_) {});
 
+                setState(() {
+                  isLoading = false;
+                });
 
+                print("Navigating to the home screen");
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(),
+                    ),
+                    ModalRoute.withName(HomeScreen.routeName));
               } catch (e) {
                 setState(() {
                   isLoading = false;
