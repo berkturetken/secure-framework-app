@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
-import 'package:secure_framework_app/screens/productDetail.dart/ProductDetailScreen.dart';
+import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 import 'screens/signUp/ownerSignUp/OwnerSignUpScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
@@ -18,16 +19,16 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => UserProvider()),
         ChangeNotifierProvider(create: (context) => ProductProvider()),
-        // TODO: Add ProductProvider() later!!!
       ],
       child: MaterialApp(
-        initialRoute: LoginForm.routeName,
+        initialRoute: LoginForm.routeName ,
         routes: {
           OwnerSignUpScreen.routeName: (context) => OwnerSignUpScreen(),
           ResidentSignUpScreen.routeName: (context) => ResidentSignUpScreen(),
           LoginForm.routeName: (context) => LoginScreen(),
           HomeScreen.routeName: (context) => HomeScreen(),
           ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
+          AddResidentScreen.routeName: (context) => AddResidentScreen(),
         },
       ),
     );

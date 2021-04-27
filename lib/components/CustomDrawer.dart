@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
-import 'package:secure_framework_app/screens/productDetail.dart/ProductDetailScreen.dart';
+import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -52,7 +53,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 trailing: Icon(Icons.arrow_right),
                 onTap: () {
                   Navigator.of(context).pushReplacementNamed(ProductDetailScreen.routeName);
-                  // Navigator.pop(context);
                 },
               ),
               ListTile(
@@ -78,7 +78,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             title: Text('Add Resident'),
             trailing: Icon(Icons.arrow_right),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.of(context).pushReplacementNamed(AddResidentScreen.routeName);
             },
           ),
         ],

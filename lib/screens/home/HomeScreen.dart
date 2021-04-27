@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
-import 'package:secure_framework_app/screens/productDetail.dart/ProductDetailScreen.dart';
+import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 import 'package:secure_framework_app/components/CustomDrawer.dart';
 import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 

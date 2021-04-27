@@ -70,6 +70,7 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
+  // Login Button
   Widget _loginButton() {
     return isLoading
         ? Center(child: CircularProgressIndicator())
@@ -94,7 +95,7 @@ class _LoginFormState extends State<LoginForm> {
 
                 final userProvider = Provider.of<UserProvider>(context, listen: false);
                 User currentUser = userProvider.user;
-
+                
                 // Newly added (For trial)
                 await Provider.of<ProductProvider>(context, listen: false)
                     .fetchAndGetProducts(email, currentUser)
