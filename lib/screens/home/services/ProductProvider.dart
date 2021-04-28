@@ -50,10 +50,9 @@ class ProductProvider with ChangeNotifier {
           productName: decodedPlainText[i]['productName'],
           roleID: decodedPlainText[i]['roleId']
         );
-
         products.add(tempProduct);
-        user.products = products;
       }
+      user.products = products;
     }
     notifyListeners();
   }

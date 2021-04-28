@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ProductProvider()),
       ],
       child: MaterialApp(
-        initialRoute: LoginForm.routeName ,
+        initialRoute: LoginForm.routeName,  // TODO: Change to Login Screen later
         routes: {
           OwnerSignUpScreen.routeName: (context) => OwnerSignUpScreen(),
           ResidentSignUpScreen.routeName: (context) => ResidentSignUpScreen(),
