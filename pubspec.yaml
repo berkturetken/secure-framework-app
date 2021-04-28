@@ -29,6 +29,7 @@ dependencies:
   encrypt: ^4.1.0
   http: ^0.12.2
   flutter_secure_storage: ^3.3.5
+  rflutter_alert: ^1.1.0
   flutter_svg: ^0.19.0
   flutter:
     sdk: flutter
@@ -57,6 +58,7 @@ flutter:
   assets:
     - assets/
     - assets/icons/Error.svg
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

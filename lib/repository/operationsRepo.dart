@@ -42,3 +42,24 @@ Future<Map> getProducts(String email) async {
   }
   return responseJson;
 }
+
+Future<Map> addNewResident(String email, String message) async {
+  var responseJson;
+  final body = {
+    "email": email,
+    "message": message
+  };
+  final jsonString = json.encode(body);
+  
+  try {
+    final response = await http.post(
+      'https://h24q9fa19h.execute-api.eu-central-1.amazonaws.com/test/addresident',
+      body: jsonString
+    );
+    responseJson = jsonDecode(response.body);
+    print(responseJson);
+  } on Exception catch(_) {
+    print("Exception occurs in addNewResident() - operationsRepo...");
+  }
+  return responseJson;
+}
