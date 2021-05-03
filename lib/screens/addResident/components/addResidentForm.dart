@@ -81,14 +81,15 @@ class _AddResidentFormState extends State<AddResidentForm> {
                   isLoading = true;
                 });
                 // For debugging purposes:
-                print("'Add a New Resident' button is pressed...");
-                print("Resident's email: " + email);
+                // print("'Add a New Resident' button is pressed...");
+                // print("Resident's email: " + email);
+
                 // If dropdown menu is never used, then productCode is null.
                 // Therefore, get the productCode of the first product of the current user's products
                 if (productCode == null) {
                   productCode = currentUser.products[0].productCode;
                 }
-                print("Product Code: " + productCode);
+                // print("Product Code: " + productCode);
                 
                 var data = {'email': email, 'productCode': productCode};
                 String formattedData = jsonEncode(data);
@@ -105,7 +106,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
                 }
               }
               else {
-                print("Hata");
+                print("One of the fields did not satisfy the requirements! Check the input fields again");
               }
             },
           );
@@ -148,8 +149,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
   }
 
   // Product Code Form Field
-  DropdownButtonFormField<Product> buildProductCodeFormField(
-      List<Product> products, Product defaultProduct) {
+  DropdownButtonFormField<Product> buildProductCodeFormField(List<Product> products, Product defaultProduct) {
     return DropdownButtonFormField<Product>(
       value: defaultProduct,
       onChanged: (selectedValue) {

@@ -12,7 +12,7 @@ Future<Map> sendMessage(String message, String email, String productCode) async 
   
   try {
     final response = await http.post(
-      'https://h24q9fa19h.execute-api.eu-central-1.amazonaws.com/test/light-toggle',
+      'https://h24q9fa19h.execute-api.eu-central-1.amazonaws.com/test/command',
       body: jsonString
     );
     responseJson = jsonDecode(response.body);
@@ -54,6 +54,27 @@ Future<Map> addNewResident(String email, String message) async {
   try {
     final response = await http.post(
       'https://h24q9fa19h.execute-api.eu-central-1.amazonaws.com/test/addresident',
+      body: jsonString
+    );
+    responseJson = jsonDecode(response.body);
+    print(responseJson);
+  } on Exception catch(_) {
+    print("Exception occurs in addNewResident() - operationsRepo...");
+  }
+  return responseJson;
+}
+
+Future<Map> getStatus(String productCode, String email) async {
+  var responseJson;
+  final body = {
+    "email": email,
+    "productCode": productCode
+  };
+  final jsonString = json.encode(body);
+  
+  try {
+    final response = await http.post(
+      'https://h24q9fa19h.execute-api.eu-central-1.amazonaws.com/test/status',
       body: jsonString
     );
     responseJson = jsonDecode(response.body);
