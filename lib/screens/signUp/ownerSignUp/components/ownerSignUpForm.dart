@@ -9,10 +9,12 @@ import 'package:flutter/services.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/signUp/residentSignUp/ResidentSignUpScreen.dart';
 
-Future<void> beginSignUp(String data) async {
+Future<void> beginOwnerSignUp(String data) async {
   var encryptedData = await encryptionRSA(data);
 
-  Map jsonResponseFromSignUp = await signUp(encryptedData);
+  Map jsonResponseFromOwnerSignUp = await ownerSignUp(encryptedData);
+
+  // TODO: Create a pop-up to inform the user
 }
 
 class OwnerSignUpForm extends StatefulWidget {
@@ -67,7 +69,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
                 String formattedData = jsonEncode(data);
                 print(formattedData);
 
-                beginSignUp(formattedData);
+                beginOwnerSignUp(formattedData);
               }
             },
           ),

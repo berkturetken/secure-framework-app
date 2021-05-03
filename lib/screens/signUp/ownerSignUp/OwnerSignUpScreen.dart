@@ -8,10 +8,8 @@ class OwnerSignUpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Center(
-          child: Text("Sign Up"),
-        ),
+        centerTitle: true,
+        title: Text("Sign Up"),
         backgroundColor: Colors.blue[900],
       ),
       body: SafeArea(

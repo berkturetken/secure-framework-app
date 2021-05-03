@@ -5,15 +5,19 @@ import 'package:secure_framework_app/components/formError.dart';
 import 'package:flutter/services.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/signUp/ownerSignUp/OwnerSignUpScreen.dart';
+import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
+import 'dart:convert';
+import 'package:secure_framework_app/repository/signUpRepo.dart';
 
-/*
-Future<void> beginSignUp(String data) async {
+Future<void> beginResidentSignUp(String data) async {
   var encryptedData = await encryptionRSA(data);
 
-  Map jsonResponseFromSignUp = await signUp(encryptedData);
+  Map jsonResponseFromResidentSignUp = await residentSignUp(encryptedData);
 
+  var response = jsonResponseFromResidentSignUp["message"];
+  print("Response from residentSignUp: ${response}");
 }
-*/
+
 
 class ResidentSignUpForm extends StatefulWidget {
   @override
@@ -24,6 +28,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
   final _formKey = GlobalKey<FormState>();
   
   String name, surname, email, password = "", confirmationPassword;
+  String nonUsedProductCode = "AAA";
 
   final List<String> errors = [];
 
@@ -52,13 +57,14 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
             press: () {
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
-                /*
+                
                 // Prepare the data - Hash the password before sending to the server 
                 String hashedPassword = passwordHashing(password);
 
                 var data = {
                   'name': name,
                   'surname': surname,
+                  'productCode': nonUsedProductCode,
                   'email': email,
                   'password': hashedPassword
                 };
@@ -66,8 +72,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
                 String formattedData = jsonEncode(data);
                 print(formattedData);
                 
-                beginSignUp(formattedData);
-                */
+                beginResidentSignUp(formattedData);
               }
             },
           ),
