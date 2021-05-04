@@ -8,13 +8,12 @@ import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'package:flutter/services.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/signUp/residentSignUp/ResidentSignUpScreen.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
-Future<void> beginOwnerSignUp(String data) async {
+Future<dynamic> beginOwnerSignUp(String data) async {
   var encryptedData = await encryptionRSA(data);
-
   Map jsonResponseFromOwnerSignUp = await ownerSignUp(encryptedData);
-
-  // TODO: Create a pop-up to inform the user
+  return jsonResponseFromOwnerSignUp;
 }
 
 class OwnerSignUpForm extends StatefulWidget {
@@ -23,11 +22,21 @@ class OwnerSignUpForm extends StatefulWidget {
 }
 
 class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
+  bool isLoading = false;
+  // Form Variables
   final _formKey = GlobalKey<FormState>();
-
-  String name, surname, email, productCode, password = "", confirmationPassword;
-
   final List<String> errors = [];
+  
+  // Text Fields
+  String name, surname, email, productCode, password = "", confirmationPassword;
+  
+  // Text Field Controllers
+  final nameTextField = TextEditingController();
+  final surnameTextField = TextEditingController();
+  final emailTextField = TextEditingController();
+  final productCodeTextField = TextEditingController();
+  final passwordTextField = TextEditingController();
+  final confirmationPasswordTextField = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +58,28 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
           SizedBox(height: 10),
           FormError(errors: errors),
           SizedBox(height: 15),
-          DefaultButton(
+          _createAnAccountButton(),
+          SizedBox(height: 20),
+          _customTextRouting("Already have an account? ", LoginForm.routeName, "Login"),
+          SizedBox(height: 10),
+          _customTextRouting("Are you a resident? ", ResidentSignUpScreen.routeName, "Sign Up"),
+        ],
+      ),
+    );
+  }
+
+  // 'Create an Account' Button
+  Widget _createAnAccountButton() {
+    return isLoading
+        ? Center(child: CircularProgressIndicator())
+        : DefaultButton(
             text: "Create an Account",
-            press: () {
-              if (_formKey.currentState.validate()) {
+            press: () async {
+              if (_formKey.currentState.validate() && errors.isEmpty) {
                 _formKey.currentState.save();
+                setState(() {
+                  isLoading = true;
+                });
 
                 // Prepare the data - Hash the password before sending to the server
                 String hashedPassword = passwordHashing(password);
@@ -69,17 +95,59 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
                 String formattedData = jsonEncode(data);
                 print(formattedData);
 
-                beginOwnerSignUp(formattedData);
+                dynamic response = await beginOwnerSignUp(formattedData);
+                setState(() {
+                  isLoading = false;
+                });
+                _popupWindow(context, response);
+
+                // Clear the input fields
+                if(response["statusCode"] == 200) {
+                  clearInputFields();
+                }
               }
             },
+          );
+  }
+
+  // Clearing the input fields
+  clearInputFields() {
+    nameTextField.clear();
+    surnameTextField.clear();
+    emailTextField.clear();
+    productCodeTextField.clear();
+    passwordTextField.clear();
+    confirmationPasswordTextField.clear();
+  }
+
+  // Pop-up window
+  _popupWindow(context, response) {
+    // Return Codes are as follows
+    // 200: User is successfully created,
+    // 400: User is already registered with another product,
+    // 400: Product Code is invalid
+    int returnCode = response["statusCode"];
+    String returnMessage = response["message"];
+    Alert(
+      context: context,
+      title: returnCode == 200 ? "Great :)" : "Sorry :(",
+      desc: returnMessage,
+      image: returnCode == 200
+          ? Image.asset("assets/images/success-2.png")
+          : Image.asset("assets/images/cross-2.png"),
+      buttons: [
+        DialogButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            "Take Me Back",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
           ),
-          SizedBox(height: 20),
-          _customTextRouting("Already have an account? ", LoginForm.routeName, "Login"),
-          SizedBox(height: 10),
-          _customTextRouting("Are you a resident? ", ResidentSignUpScreen.routeName, "Sign Up"),
-        ],
-      ),
-    );
+        )
+      ],
+    ).show();
   }
 
   // Custom Text and Ink with Routing
@@ -110,7 +178,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
       keyboardType: TextInputType.name,
       onSaved: (newValue) => name = newValue,
       onChanged: (value) {
-        if (value.isEmpty && errors.contains(NameNullError)) {
+        if (value.isNotEmpty && errors.contains(NameNullError)) {
           setState(() {
             errors.remove(NameNullError);
           });
@@ -126,6 +194,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
         return null;
       },
       decoration: inputDecoration("Name", "Enter your name"),
+      controller: nameTextField,
     );
   }
 
@@ -151,6 +220,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
         return null;
       },
       decoration: inputDecoration("Surname", "Enter your surname"),
+      controller: surnameTextField,
     );
   }
 
@@ -164,8 +234,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
           setState(() {
             errors.remove(EmailNullError);
           });
-        } else if (emailValidationRegExp.hasMatch(value) &&
-            errors.contains(InvalidEmailError)) {
+        } else if (emailValidationRegExp.hasMatch(value) && errors.contains(InvalidEmailError)) {
           setState(() {
             errors.remove(InvalidEmailError);
           });
@@ -177,8 +246,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
           setState(() {
             errors.add(EmailNullError);
           });
-        } else if (!emailValidationRegExp.hasMatch(value) &&
-            !errors.contains(InvalidEmailError)) {
+        } else if (value.isNotEmpty && !emailValidationRegExp.hasMatch(value) && !errors.contains(InvalidEmailError)) {
           setState(() {
             errors.add(InvalidEmailError);
           });
@@ -186,6 +254,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
         return null;
       },
       decoration: inputDecoration("Email", "Enter your email"),
+      controller: emailTextField,
     );
   }
 
@@ -212,8 +281,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
           setState(() {
             errors.add(ProductCodeNullError);
           });
-        } else if (value.length != 9 &&
-            !errors.contains(InvalidProductCodeError)) {
+        } else if (value.isNotEmpty && value.length != 9 && !errors.contains(InvalidProductCodeError)) {
           setState(() {
             errors.add(InvalidProductCodeError);
           });
@@ -221,6 +289,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
         return null;
       },
       decoration: inputDecoration("Product Code", "Enter your product code"),
+      controller: productCodeTextField,
     );
   }
 
@@ -247,7 +316,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
           setState(() {
             errors.add(PasswordNullError);
           });
-        } else if (value.length < 8 && !errors.contains(ShortPasswordError)) {
+        } else if (value.isNotEmpty && value.length < 8 && !errors.contains(ShortPasswordError)) {
           setState(() {
             errors.add(ShortPasswordError);
           });
@@ -255,6 +324,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
         return null;
       },
       decoration: inputDecoration("Password", "Enter your password"),
+      controller: passwordTextField,
     );
   }
 
@@ -281,15 +351,15 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
           setState(() {
             errors.add(ConfirmationPasswordNullError);
           });
-        } else if (value != password && !errors.contains(MatchPasswordError)) {
+        } else if (value.isNotEmpty && value != password && !errors.contains(MatchPasswordError)) {
           setState(() {
             errors.add(MatchPasswordError);
           });
         }
         return null;
       },
-      decoration:
-          inputDecoration("Confirmation Password", "Enter your password again"),
+      decoration: inputDecoration("Confirmation Password", "Enter your password again"),
+      controller: confirmationPasswordTextField,          
     );
   }
 
