@@ -11,7 +11,7 @@ import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 
-Future<int> clickAddNewResident(String currentUserEmail, String message) async {
+Future<dynamic> clickAddNewResident(String currentUserEmail, String message) async {
   final storage = Storage;
   String aesKey = await storage.read(key: "AES-Key");
   String iv = await storage.read(key: "IV");
@@ -22,13 +22,8 @@ Future<int> clickAddNewResident(String currentUserEmail, String message) async {
 
   String arrangedCommand = arrangeCommand(encryptedMessage, message, hmacKey);
 
-  Map jsonResponse = await addNewResident(currentUserEmail, arrangedCommand);
-  // If there is any response
-  var response = jsonResponse["message"];
-  var statusCode = jsonResponse["statusCode"];
-  print("Response in clickAddNewResident: " + response);
-
-  return statusCode;
+  Map jsonResponseFromAddNewResident = await addNewResident(currentUserEmail, arrangedCommand);
+  return jsonResponseFromAddNewResident;
 }
 
 class AddResidentForm extends StatefulWidget {
@@ -67,7 +62,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
     );
   }
 
-  // Add New Resident Button
+  // 'Add New Resident' Button
   Widget _addNewResidentButton(User currentUser) {
     return isLoading
         ? Center(child: CircularProgressIndicator())
@@ -86,18 +81,19 @@ class _AddResidentFormState extends State<AddResidentForm> {
                 if (productCode == null) {
                   productCode = currentUser.products[0].productCode;
                 }
-                
+
                 var data = {'email': email, 'productCode': productCode};
                 String formattedData = jsonEncode(data);
 
-                int returnFromButton = await clickAddNewResident(currentUser.email, formattedData);
-                // print(returnFromButton);
-                if (returnFromButton == 200) {
-                  setState(() {
-                    isLoading = false;
-                  });
-                  _popupWindow(context);
-                  // Clear the input fields
+                dynamic response = await clickAddNewResident(currentUser.email, formattedData);
+
+                setState(() {
+                  isLoading = false;
+                });
+                _popupWindow(context, response);
+
+                // Clear the input fields if user is added successfully
+                if (response["statusCode"] == 200) {
                   emailTextField.clear();
                 }
               }
@@ -106,12 +102,19 @@ class _AddResidentFormState extends State<AddResidentForm> {
   }
 
   // Pop-up window
-  _popupWindow(context) {
+  _popupWindow(context, response) {
+    // Return Codes are as follows
+    // 200: User added to the database
+    // 400: User is already in the system
+    int returnCode = response["statusCode"];
+    String returnMessage = response["message"];
     Alert(
       context: context,
-      title: "GREAT!",
-      desc: "You added a new resident succesfully",
-      image: Image.asset("assets/images/success-2.png"),
+      title: returnCode == 200 ? "Great :)" : "Sorry :(",
+      desc: returnMessage,
+      image: returnCode == 200
+          ? Image.asset("assets/images/success-2.png")
+          : Image.asset("assets/images/cross-2.png"),
       buttons: [
         DialogButton(
           onPressed: () => Navigator.pop(context),
@@ -126,7 +129,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
       ],
     ).show();
   }
-  
+
   // Email Form Field
   TextFormField buildEmailFormField() {
     return TextFormField(
@@ -150,8 +153,9 @@ class _AddResidentFormState extends State<AddResidentForm> {
           setState(() {
             errors.add(EmailNullError);
           });
-        }
-        else if (value.isNotEmpty && !emailValidationRegExp.hasMatch(value) && !errors.contains(InvalidEmailError)) {
+        } else if (value.isNotEmpty &&
+            !emailValidationRegExp.hasMatch(value) &&
+            !errors.contains(InvalidEmailError)) {
           setState(() {
             errors.add(InvalidEmailError);
           });
@@ -203,5 +207,4 @@ class _AddResidentFormState extends State<AddResidentForm> {
       border: outlineInputBorder,
     );
   }
-
 }
