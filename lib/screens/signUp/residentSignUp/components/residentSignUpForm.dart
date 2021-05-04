@@ -149,7 +149,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
       keyboardType: TextInputType.name,
       onSaved: (newValue) => name = newValue,
       onChanged: (value) {
-        if (value.isEmpty && errors.contains(NameNullError)) {
+        if (value.isNotEmpty && errors.contains(NameNullError)) {
           setState(() {
             errors.remove(NameNullError);
           });
@@ -203,8 +203,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
           setState(() {
             errors.remove(EmailNullError);
           });
-        } else if (emailValidationRegExp.hasMatch(value) &&
-            errors.contains(InvalidEmailError)) {
+        } else if (emailValidationRegExp.hasMatch(value) && errors.contains(InvalidEmailError)) {
           setState(() {
             errors.remove(InvalidEmailError);
           });
@@ -216,8 +215,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
           setState(() {
             errors.add(EmailNullError);
           });
-        } else if (!emailValidationRegExp.hasMatch(value) &&
-            !errors.contains(InvalidEmailError)) {
+        } else if (value.isNotEmpty && !emailValidationRegExp.hasMatch(value) && !errors.contains(InvalidEmailError)) {
           setState(() {
             errors.add(InvalidEmailError);
           });
@@ -251,7 +249,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
           setState(() {
             errors.add(PasswordNullError);
           });
-        } else if (value.length < 8 && !errors.contains(ShortPasswordError)) {
+        } else if (value.isNotEmpty && value.length < 8 && !errors.contains(ShortPasswordError)) {
           setState(() {
             errors.add(ShortPasswordError);
           });
