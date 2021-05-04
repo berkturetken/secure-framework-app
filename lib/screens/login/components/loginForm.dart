@@ -11,7 +11,7 @@ import 'package:secure_framework_app/screens/signUp/ownerSignUp/OwnerSignUpScree
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 
 class LoginForm extends StatefulWidget {
-  static const routeName = "/login";
+  //static const routeName = "/login";
 
   @override
   _LoginFormState createState() => _LoginFormState();
@@ -44,9 +44,7 @@ class _LoginFormState extends State<LoginForm> {
           FormError(errors: errors),
           SizedBox(height: 20),
           _loginButton(),
-          SizedBox(
-            height: 20,
-          ),
+          SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

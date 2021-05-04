@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
+import 'package:secure_framework_app/screens/login/loginScreen.dart';
 import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
@@ -145,7 +146,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     await storage.deleteAll();
     currentUser.dispose();
     print("Logging out from the app...");
-    Navigator.of(context).pushReplacementNamed(LoginForm.routeName);
+    Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
   }
-  
+
 }

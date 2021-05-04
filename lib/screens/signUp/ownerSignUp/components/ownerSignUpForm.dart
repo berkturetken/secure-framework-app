@@ -7,6 +7,7 @@ import 'package:secure_framework_app/repository/signUpRepo.dart';
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'package:flutter/services.dart';
 import 'package:secure_framework_app/screens/login/components/loginForm.dart';
+import 'package:secure_framework_app/screens/login/loginScreen.dart';
 import 'package:secure_framework_app/screens/signUp/residentSignUp/ResidentSignUpScreen.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
@@ -60,7 +61,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
           SizedBox(height: 15),
           _createAnAccountButton(),
           SizedBox(height: 20),
-          _customTextRouting("Already have an account? ", LoginForm.routeName, "Login"),
+          _customTextRouting("Already have an account? ", LoginScreen.routeName, "Login"),
           SizedBox(height: 10),
           _customTextRouting("Are you a resident? ", ResidentSignUpScreen.routeName, "Sign Up"),
         ],
