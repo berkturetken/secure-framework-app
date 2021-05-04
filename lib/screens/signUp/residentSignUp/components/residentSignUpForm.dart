@@ -8,16 +8,13 @@ import 'package:secure_framework_app/screens/signUp/ownerSignUp/OwnerSignUpScree
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'dart:convert';
 import 'package:secure_framework_app/repository/signUpRepo.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
-Future<void> beginResidentSignUp(String data) async {
+Future<dynamic> beginResidentSignUp(String data) async {
   var encryptedData = await encryptionRSA(data);
-
   Map jsonResponseFromResidentSignUp = await residentSignUp(encryptedData);
-
-  var response = jsonResponseFromResidentSignUp["message"];
-  print("Response from residentSignUp: ${response}");
+  return jsonResponseFromResidentSignUp;
 }
-
 
 class ResidentSignUpForm extends StatefulWidget {
   @override
@@ -26,11 +23,11 @@ class ResidentSignUpForm extends StatefulWidget {
 
 class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
   final _formKey = GlobalKey<FormState>();
-  
+  final List<String> errors = [];
+
   String name, surname, email, password = "", confirmationPassword;
   String nonUsedProductCode = "AAA";
-
-  final List<String> errors = [];
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,17 +45,32 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
           SizedBox(height: 20),
           buildConfirmationPasswordFormField(),
           SizedBox(height: 10),
-          
           FormError(errors: errors),
           SizedBox(height: 15),
-          
-          DefaultButton(
+          _createAnAccountButton(),
+          SizedBox(height: 20),
+          _customTextRouting("Already have an account? ", LoginForm.routeName, "Login"),
+          SizedBox(height: 10),
+          _customTextRouting("Are you an owner? ", OwnerSignUpScreen.routeName, "Sign Up"),
+        ],
+      ),
+    );
+  }
+
+  // 'Create an Account' Button
+  Widget _createAnAccountButton() {
+    return isLoading
+        ? Center(child: CircularProgressIndicator())
+        : DefaultButton(
             text: "Create an Account",
-            press: () {
-              if (_formKey.currentState.validate()) {
+            press: () async {
+              if (_formKey.currentState.validate() && errors.isEmpty) {
                 _formKey.currentState.save();
-                
-                // Prepare the data - Hash the password before sending to the server 
+                setState(() {
+                  isLoading = true;
+                });
+
+                // Prepare the data - Hash the password before sending to the server
                 String hashedPassword = passwordHashing(password);
 
                 var data = {
@@ -71,20 +83,44 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
 
                 String formattedData = jsonEncode(data);
                 print(formattedData);
-                
-                beginResidentSignUp(formattedData);
+
+                dynamic response = await beginResidentSignUp(formattedData);
+                setState(() {
+                  isLoading = false;
+                });
+                _onAlertWithCustomImagePressed(context, response);
               }
             },
-          ),
-          SizedBox(height: 20),
-          _customTextRouting("Already have an account? ", LoginForm.routeName, "Login"),
-          SizedBox(height: 10),
-          _customTextRouting("Are you an owner? ", OwnerSignUpScreen.routeName, "Sign Up"),
-        ],
-      ),
-    );
+          );
   }
-  
+
+  // Pop-up window depending on the returnCode
+  // Current Return Codes --> 200: successful sign up, 400: user already signed up
+  _onAlertWithCustomImagePressed(context, response) {
+    int returnCode = response["statusCode"];
+    String returnMessage = response["message"];
+    Alert(
+      context: context,
+      title: returnCode == 200 ? "Great :)" : "Sorry :(",
+      desc: returnMessage,
+      image: returnCode == 200
+          ? Image.asset("assets/images/success-2.png")
+          : Image.asset("assets/images/cross-2.png"),
+      buttons: [
+        DialogButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            "Take Me Back",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        )
+      ],
+    ).show();
+  }
+
   // Custom Text and Ink with Routing
   Widget _customTextRouting(String text, String route, String inkText) {
     return Row(
@@ -106,7 +142,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
       ],
     );
   }
-  
+
   // Name Form Field
   TextFormField buildNameFormField() {
     return TextFormField(
@@ -167,7 +203,8 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
           setState(() {
             errors.remove(EmailNullError);
           });
-        } else if (emailValidationRegExp.hasMatch(value) && errors.contains(InvalidEmailError)) {
+        } else if (emailValidationRegExp.hasMatch(value) &&
+            errors.contains(InvalidEmailError)) {
           setState(() {
             errors.remove(InvalidEmailError);
           });
@@ -179,7 +216,8 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
           setState(() {
             errors.add(EmailNullError);
           });
-        } else if (!emailValidationRegExp.hasMatch(value) && !errors.contains(InvalidEmailError)) {
+        } else if (!emailValidationRegExp.hasMatch(value) &&
+            !errors.contains(InvalidEmailError)) {
           setState(() {
             errors.add(InvalidEmailError);
           });
@@ -230,12 +268,12 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
       obscureText: true,
       onSaved: (newValue) => confirmationPassword = newValue,
       onChanged: (value) {
-        if (value.isNotEmpty && errors.contains(ConfirmationPasswordNullError)) {
+        if (value.isNotEmpty &&
+            errors.contains(ConfirmationPasswordNullError)) {
           setState(() {
             errors.remove(ConfirmationPasswordNullError);
           });
-        }
-        else if (value == password && errors.contains(MatchPasswordError)) {
+        } else if (value == password && errors.contains(MatchPasswordError)) {
           setState(() {
             errors.remove(MatchPasswordError);
           });
@@ -247,8 +285,7 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
           setState(() {
             errors.add(ConfirmationPasswordNullError);
           });
-        }
-        else if (value != password && !errors.contains(MatchPasswordError)) {
+        } else if (value != password && !errors.contains(MatchPasswordError)) {
           setState(() {
             errors.add(MatchPasswordError);
           });
