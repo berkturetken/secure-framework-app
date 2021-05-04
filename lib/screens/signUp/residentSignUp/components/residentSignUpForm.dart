@@ -88,15 +88,18 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
                 setState(() {
                   isLoading = false;
                 });
-                _onAlertWithCustomImagePressed(context, response);
+                _popupWindow(context, response);
               }
             },
           );
   }
 
-  // Pop-up window depending on the returnCode
-  // Current Return Codes --> 200: successful sign up, 400: user already signed up
-  _onAlertWithCustomImagePressed(context, response) {
+  // Pop-up window
+  _popupWindow(context, response) {
+    // Return Codes are as follows
+    // 200: User is successfully created,
+    // 400: User is already signed up,
+    // 400: User does not exist
     int returnCode = response["statusCode"];
     String returnMessage = response["message"];
     Alert(

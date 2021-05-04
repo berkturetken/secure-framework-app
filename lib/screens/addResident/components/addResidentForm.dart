@@ -80,38 +80,53 @@ class _AddResidentFormState extends State<AddResidentForm> {
                 setState(() {
                   isLoading = true;
                 });
-                // For debugging purposes:
-                // print("'Add a New Resident' button is pressed...");
-                // print("Resident's email: " + email);
 
                 // If dropdown menu is never used, then productCode is null.
                 // Therefore, get the productCode of the first product of the current user's products
                 if (productCode == null) {
                   productCode = currentUser.products[0].productCode;
                 }
-                // print("Product Code: " + productCode);
                 
                 var data = {'email': email, 'productCode': productCode};
                 String formattedData = jsonEncode(data);
 
                 int returnFromButton = await clickAddNewResident(currentUser.email, formattedData);
-                print(returnFromButton);
+                // print(returnFromButton);
                 if (returnFromButton == 200) {
                   setState(() {
                     isLoading = false;
                   });
-                  _onAlertWithCustomImagePressed(context);
+                  _popupWindow(context);
                   // Clear the input fields
                   emailTextField.clear();
                 }
-              }
-              else {
-                print("One of the fields did not satisfy the requirements! Check the input fields again");
               }
             },
           );
   }
 
+  // Pop-up window
+  _popupWindow(context) {
+    Alert(
+      context: context,
+      title: "GREAT!",
+      desc: "You added a new resident succesfully",
+      image: Image.asset("assets/images/success-2.png"),
+      buttons: [
+        DialogButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            "Take Me Back",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        )
+      ],
+    ).show();
+  }
+  
   // Email Form Field
   TextFormField buildEmailFormField() {
     return TextFormField(
@@ -189,24 +204,4 @@ class _AddResidentFormState extends State<AddResidentForm> {
     );
   }
 
-  _onAlertWithCustomImagePressed(context) {
-    Alert(
-      context: context,
-      title: "GREAT!",
-      desc: "You added a new resident succesfully",
-      image: Image.asset("assets/images/success-2.png"),
-      buttons: [
-        DialogButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            "Take Me Back",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-            ),
-          ),
-        )
-      ],
-    ).show();
-  }
 }
