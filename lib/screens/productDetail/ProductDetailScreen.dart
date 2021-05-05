@@ -8,8 +8,9 @@ import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'dart:convert';
 import 'package:secure_framework_app/repository/operationsRepo.dart';
 import 'package:secure_framework_app/components/CustomDrawer.dart';
+import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 
-Future<void> sendCommand(String command, String email) async {
+Future<void> sendCommand(String command, String email, String productCode) async {
   final storage = Storage;
   String aesKey = await storage.read(key: "AES-Key");
   String iv = await storage.read(key: "IV");
@@ -17,15 +18,9 @@ Future<void> sendCommand(String command, String email) async {
 
   String encryptedCommand = encryptionAES(command, aesKey, iv);
   print("Encrypted Message: " + encryptedCommand);
-
   String arrangedCommand = arrangeCommand(encryptedCommand, command, hmacKey);
-
-  // PRODUCT CODE is hard-coded for now!!!
-  // Sending the light message and waiting for response
-  Map jsonResponse = await sendMessage(arrangedCommand, email, "6AOLWR912");
-  var response = jsonResponse["message"];
-
-  print("Response: " + response);
+  
+  Map jsonResponseFromSendMessage = await sendMessage(arrangedCommand, email, productCode);
 }
 
 Future<void> getProductStatus(String productCode, String email) async {
@@ -41,15 +36,10 @@ Future<void> getProductStatus(String productCode, String email) async {
   // String arrangedCommand = arrangeCommand(encryptedCommand, productCode, hmacKey);
 
   /* VARIABLES */
-  String encryptedCurrentStatus,
-      cipherText,
-      plainText,
-      hmac,
-      hmacCreatedByClient;
+  String encryptedCurrentStatus, cipherText, plainText, hmac, hmacCreatedByClient;
   int length, threshold;
   Map decodedPlainText;
   Map jsonResponseFromGetStatus = await getStatus(productCode, email);
-  int lightValue;
   if (jsonResponseFromGetStatus != null) {
     encryptedCurrentStatus = jsonResponseFromGetStatus["message"];
     print("Response from getStatus: " + encryptedCurrentStatus);
@@ -83,6 +73,7 @@ class ProductDetailScreen extends StatefulWidget {
   @override
   _ProductDetailScreenState createState() => _ProductDetailScreenState();
 }
+
 // TODO: Code refactoring for this screen --> Use provider for the IoT devices
 // of corresponding product
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
@@ -93,8 +84,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     User user = userProvider.user;
+    final arguments = ModalRoute.of(context).settings.arguments;
+    Product currentProduct = arguments;
 
-    getProductStatus("6AOLWR912", user.email);
+    getProductStatus(currentProduct.productCode, user.email);
 
     return Scaffold(
       appBar: AppBar(
@@ -119,7 +112,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                  _switch(user),
+                  _switch(user, currentProduct),
                 ],
               ),
             ],
@@ -130,7 +123,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _switch(User user) {
+  Widget _switch(User user, Product product) {
     return FlutterSwitch(
       value: status,
       onToggle: (val) async {
@@ -141,7 +134,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           command["light"] = 0;
         }
         String formattedCommand = json.encode(command);
-        await sendCommand(formattedCommand, user.email);
+        await sendCommand(formattedCommand, user.email, product.productCode);
         
         // Try for different ms values for sleep!
         await Future.delayed(Duration(milliseconds: 250));    

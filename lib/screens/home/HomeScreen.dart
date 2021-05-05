@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     color: Colors.blue,
                     onPressed: () {
-                      Navigator.of(context).pushNamed(ProductDetailScreen.routeName);
+                      Navigator.of(context).pushNamed(ProductDetailScreen.routeName, arguments: product );
                     },
                   ),
                 ],
