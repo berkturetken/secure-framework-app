@@ -9,6 +9,8 @@ import 'dart:convert';
 import 'package:secure_framework_app/repository/operationsRepo.dart';
 import 'package:secure_framework_app/components/CustomDrawer.dart';
 import 'package:secure_framework_app/screens/home/services/ProductData.dart';
+import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 Future<void> sendCommand(String command, String email, String productCode) async {
   final storage = Storage;
@@ -19,52 +21,8 @@ Future<void> sendCommand(String command, String email, String productCode) async
   String encryptedCommand = encryptionAES(command, aesKey, iv);
   print("Encrypted Message: " + encryptedCommand);
   String arrangedCommand = arrangeCommand(encryptedCommand, command, hmacKey);
-  
+
   Map jsonResponseFromSendMessage = await sendMessage(arrangedCommand, email, productCode);
-}
-
-Future<void> getProductStatus(String productCode, String email) async {
-  // TODO: Decryption of the message can be grouped as a seperate function!!!
-  final storage = Storage;
-  String aesKey = await storage.read(key: "AES-Key");
-  String iv = await storage.read(key: "IV");
-  String hmacKey = await storage.read(key: "HMAC-Key");
-
-  // String encryptedCommand = encryptionAES(productCode, aesKey, iv);
-  // print("Encrypted Message: " + encryptedCommand);
-
-  // String arrangedCommand = arrangeCommand(encryptedCommand, productCode, hmacKey);
-
-  /* VARIABLES */
-  String encryptedCurrentStatus, cipherText, plainText, hmac, hmacCreatedByClient;
-  int length, threshold;
-  Map decodedPlainText;
-  Map jsonResponseFromGetStatus = await getStatus(productCode, email);
-  if (jsonResponseFromGetStatus != null) {
-    encryptedCurrentStatus = jsonResponseFromGetStatus["message"];
-    print("Response from getStatus: " + encryptedCurrentStatus);
-  }
-
-  // Decrypt the response
-  length = encryptedCurrentStatus.length;
-  threshold = length - HmacLength;
-  cipherText = encryptedCurrentStatus.substring(0, threshold);
-  hmac = encryptedCurrentStatus.substring(threshold);
-  plainText = decryption(cipherText, aesKey, iv);
-  hmacCreatedByClient = hmacing(plainText, hmacKey);
-  if (hmacCreatedByClient != hmac) {
-    print("HMACs are not matched!");
-  } else {
-    print("HMACs are matched.");
-    print(plainText);
-
-    decodedPlainText = jsonDecode(plainText);
-    print("Decoded version: ${decodedPlainText}");
-    decodedPlainText.forEach((key, value) {
-      print("Key: " + key);
-      print("Value: " + value.toString());
-    });
-  }
 }
 
 class ProductDetailScreen extends StatefulWidget {
@@ -74,11 +32,34 @@ class ProductDetailScreen extends StatefulWidget {
   _ProductDetailScreenState createState() => _ProductDetailScreenState();
 }
 
-// TODO: Code refactoring for this screen --> Use provider for the IoT devices
-// of corresponding product
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool status = false;
+  bool _isInit = true;
+  bool _isLoading = false;
   Map<String, int> command = {};
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      print("Inside isInit.");
+      setState(() {
+        _isLoading = true;
+      });
+      final userProvider = Provider.of<UserProvider>(context);
+      User user = userProvider.user;
+      final arguments = ModalRoute.of(context).settings.arguments;
+      Product currentProduct = arguments;
+      Provider.of<ProductProvider>(context)
+          .fetchAndGetProductStatus(currentProduct.productCode, user.email)
+          .then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,46 +68,47 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final arguments = ModalRoute.of(context).settings.arguments;
     Product currentProduct = arguments;
 
-    getProductStatus(currentProduct.productCode, user.email);
-
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text("Product Detail"),
-        backgroundColor: Colors.blue[900],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Container(
-                    child: Text(
-                      "Living Room - Light 1",
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
+    return _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Scaffold(
+            appBar: AppBar(
+              centerTitle: true,
+              title: Text("Product Detail"),
+              backgroundColor: Colors.blue[900],
+            ),
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                          child: Text(
+                            "Living Room - Light 1",
+                            style: TextStyle(
+                              fontSize: 17,
+                            ),
+                          ),
+                        ),
+                        _switch(context, user, currentProduct),
+                      ],
                     ),
-                  ),
-                  _switch(user, currentProduct),
-                ],
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
-      drawer: CustomDrawer(),
-    );
+            ),
+            drawer: CustomDrawer(),
+          );
   }
 
-  Widget _switch(User user, Product product) {
+  Widget _switch(BuildContext context, User user, Product product) {
     return FlutterSwitch(
       value: status,
       onToggle: (val) async {
+        Map x;
         print("Val: ${val}");
         if (val) {
           command["light"] = 1;
@@ -136,15 +118,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         String formattedCommand = json.encode(command);
         await sendCommand(formattedCommand, user.email, product.productCode);
         
-        // Try for different ms values for sleep!
-        await Future.delayed(Duration(milliseconds: 250));    
-        await getProductStatus("6AOLWR912", user.email);
-
-        // Since setState() is used, getProductStatus is called TWICE! --> Handle this
-        setState(() {
-          status = val;
-        });
+        // Try for different ms values for sleep! --> Now, sleep: 0.5 seconds
+        // TODO: What can we do as an alternative?
+        await Future.delayed(Duration(milliseconds: 500));
+        await Provider.of<ProductProvider>(context, listen: false)
+            .fetchAndGetProductStatus(product.productCode, user.email)
+            .then((value) => {
+              x = value
+            });
+        
+        // Retrieved response
+        x.forEach((key, value) {
+          value = value.toInt(); 
+          if ((value == 1 && val) || (value == 0 && !val)) {
+            setState(() {
+              status = val;
+            });
+          }
+          else {
+            _popupWindow(context);
+          }
+         });
       },
     );
   }
+
+  // Pop up window
+  _popupWindow(context) {
+    Alert(
+      context: context,
+      title: "Sorry :(",
+      desc: "We cannot connect to the IoT Devices",
+      image: Image.asset("assets/images/cross-2.png"),
+      buttons: [
+        DialogButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            "Take Me Back",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        )
+      ],
+    ).show();
+  }
+
 }

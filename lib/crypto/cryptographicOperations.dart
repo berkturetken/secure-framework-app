@@ -4,7 +4,6 @@ import 'package:secure_framework_app/components/constants.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 
-
 String decryption(String cipherText, String preKey, String preIV) {
   // Encode the key and IV
   var encodedKey = utf8.encode(preKey);
@@ -17,12 +16,12 @@ String decryption(String cipherText, String preKey, String preIV) {
   // Create an encrypter with the key and set the mode as CBC (Cipher Block Chaining)
   final obj = e.Encrypter(e.AES(key, mode: e.AESMode.cbc));
 
-  e.Encrypted ct = e.Encrypted.fromBase64(cipherText); // ct stands for CipherText
+  e.Encrypted ct =
+      e.Encrypted.fromBase64(cipherText); // ct stands for CipherText
   String plainText = obj.decrypt(ct, iv: iv);
 
   return plainText;
 }
-
 
 String encryptionAES(String plainText, String preKey, String preIV) {
   // Encode the key and IV
@@ -43,8 +42,7 @@ String encryptionAES(String plainText, String preKey, String preIV) {
   return cipherText;
 }
 
-
-Future<String> encryptionRSA (String data) async {
+Future<String> encryptionRSA(String data) async {
   // parseKeyFromFile() is not working! --> await parseKeyFromFile('assets/my_rsa_public.pem')
   final publicPem = await rootBundle.loadString('assets/my_rsa_public.pem');
   final publicKey = e.RSAKeyParser().parse(publicPem);
@@ -57,7 +55,6 @@ Future<String> encryptionRSA (String data) async {
   print("Encrypted Message: " + cipherText);
   return cipherText;
 }
-
 
 void arrangeMasterKey(String masterKey) async {
   /***** 
@@ -83,10 +80,9 @@ void arrangeMasterKey(String masterKey) async {
   await storage.write(key: "HMAC-Key", value: hmacKey);
 }
 
-
 String arrangeCommand(String cipherText, String plainText, String hmacKey) {
   // Encrypt the messages which are going to send to the IoT device through AWS
-  String hmac = hmacing(plainText, hmacKey);  
+  String hmac = hmacing(plainText, hmacKey);
   String securedCommand = cipherText + hmac;
 
   // For debugging purposes:
@@ -98,12 +94,11 @@ String arrangeCommand(String cipherText, String plainText, String hmacKey) {
   return securedCommand;
 }
 
-
 String passwordHashing(String password) {
   // Hashing with SHA-512
   List<int> passwordBytes = utf8.encode(password);
   Digest passwordHashedDigest = sha512.convert(passwordBytes);
-  
+
   // For debugging
   print("Password: $password");
   print("Hashed Password: $passwordHashedDigest");
@@ -111,7 +106,6 @@ String passwordHashing(String password) {
   String passwordHashed = passwordHashedDigest.toString();
   return passwordHashed;
 }
-
 
 String hmacing(String plainText, String hmacKey) {
   List<int> encodedHmac = utf8.encode(hmacKey);
@@ -121,4 +115,40 @@ String hmacing(String plainText, String hmacKey) {
   Digest digest = hmacSha256.convert(encodedPlainText);
   String hmac = base64.encode(digest.bytes);
   return hmac;
+}
+
+Future<String> verifyAndExtractIncommingMessages(String encryptedIncommingMessage) async {
+  final storage = Storage;
+  String cipherText, plainText, key, iv, hmac, hmacKey, hmacCreatedByClient;
+  int length, threshold;
+
+  length = encryptedIncommingMessage.length;
+
+  // Find the threshold for hmac
+  threshold = length - HmacLength;
+  
+  // encryptedIncommingMessage = cipherText + hmac
+  cipherText = encryptedIncommingMessage.substring(0, threshold);
+  hmac = encryptedIncommingMessage.substring(threshold);
+
+  // Retrieve the keys from the storage
+  key = await storage.read(key: "AES-Key");
+  iv = await storage.read(key: "IV");
+  hmacKey = await storage.read(key: "HMAC-Key");
+
+  // Get the plainText from the cipherText
+  plainText = decryption(cipherText, key, iv);
+
+  // Create your hmac with the plainText obtained above
+  hmacCreatedByClient = hmacing(plainText, hmacKey);
+
+  // Compare your hmac and incoming hmac
+  if (hmacCreatedByClient != hmac) {
+    print("HMACs are not matched!");
+    return "Error";
+  }
+
+  print("HMACs are matched.");
+  print(plainText);
+  return plainText;
 }

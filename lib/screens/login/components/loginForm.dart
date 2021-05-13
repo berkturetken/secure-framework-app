@@ -94,7 +94,7 @@ class _LoginFormState extends State<LoginForm> {
                 final userProvider = Provider.of<UserProvider>(context, listen: false);
                 User currentUser = userProvider.user;
                 
-                // Newly added (For trial)
+                // Newly added
                 await Provider.of<ProductProvider>(context, listen: false)
                     .fetchAndGetProducts(email, currentUser)
                     .then((_) {});

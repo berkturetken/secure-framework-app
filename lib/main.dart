@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
-import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
 import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 import 'screens/signUp/ownerSignUp/OwnerSignUpScreen.dart';
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ProductProvider()),
       ],
       child: MaterialApp(
-        initialRoute: LoginScreen.routeName,  // TODO: Change to Login Screen later
+        initialRoute: LoginScreen.routeName,
         routes: {
           OwnerSignUpScreen.routeName: (context) => OwnerSignUpScreen(),
           ResidentSignUpScreen.routeName: (context) => ResidentSignUpScreen(),

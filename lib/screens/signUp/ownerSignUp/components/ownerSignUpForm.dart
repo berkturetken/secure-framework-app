@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'package:secure_framework_app/repository/signUpRepo.dart';
 import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'package:flutter/services.dart';
-import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
 import 'package:secure_framework_app/screens/signUp/residentSignUp/ResidentSignUpScreen.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';

@@ -4,56 +4,65 @@ import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 import 'package:secure_framework_app/repository/operationsRepo.dart';
 import '../services/ProductData.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
-import 'package:secure_framework_app/components/constants.dart';
 
 class ProductProvider with ChangeNotifier {
-  List _products;
-
-  List<Product> get products => _products;
 
   Future<void> fetchAndGetProducts(String email, User user) async {
-    final storage = Storage; 
     List<Product> products = new List();
-    String encryptedProducts, cipherText, plainText, key, iv, hmac, hmacKey, hmacCreatedByClient;
-    int length, threshold;
+    String encryptedProducts, plainText;
     List<dynamic> decodedPlainText;
 
     Map jsonResponseFromGetProducts = await getProducts(email);
-    if (jsonResponseFromGetProducts != null) {
-      encryptedProducts = jsonResponseFromGetProducts["message"];
-      print(encryptedProducts);
+
+    // Null check
+    if (jsonResponseFromGetProducts == null) {
+      return;
     }
 
-    length = encryptedProducts.length;
-    threshold = length - HmacLength;
-    cipherText = encryptedProducts.substring(0, threshold);
-    hmac = encryptedProducts.substring(threshold);
+    encryptedProducts = jsonResponseFromGetProducts["message"];
+    plainText = await verifyAndExtractIncommingMessages(encryptedProducts);
+    decodedPlainText = jsonDecode(plainText);
 
-    key = await storage.read(key: "AES-Key");
-    iv = await storage.read(key: "IV");
-    hmacKey = await storage.read(key: "HMAC-Key");
-
-    plainText = decryption(cipherText, key, iv);
-    hmacCreatedByClient = hmacing(plainText, hmacKey);
-
-    if (hmacCreatedByClient != hmac) {
-      print("HMACs are not matched!");
+    for (var i = 0; i < decodedPlainText.length; i++) {
+      Product tempProduct = new Product(
+        productCode: decodedPlainText[i]['productCode'],
+        productName: decodedPlainText[i]['productName'],
+        roleID: decodedPlainText[i]['roleId']
+      );
+      products.add(tempProduct);
     }
-    else {
-      print("HMACs are matched.");
-      print(plainText);
-      
-      decodedPlainText = jsonDecode(plainText);
-      for(var i=0; i < decodedPlainText.length; i++) {
-        Product tempProduct = new Product(
-          productCode: decodedPlainText[i]['productCode'],
-          productName: decodedPlainText[i]['productName'],
-          roleID: decodedPlainText[i]['roleId']
-        );
-        products.add(tempProduct);
-      }
-      user.products = products;
-    }
+    user.products = products;
     notifyListeners();
   }
+
+  Future<Map> fetchAndGetProductStatus(String productCode, String email) async {
+    String encryptedCurrentStatus, plainText;
+    Map decodedPlainText;
+    Map jsonResponseFromGetStatus = await getStatus(productCode, email);
+
+    // Null check
+    if (jsonResponseFromGetStatus == null) {
+      print("JsonResponseFromGetStatus is null...");
+      return decodedPlainText;
+    }
+
+    // Unsuccessful return check
+    if(jsonResponseFromGetStatus["statusCode"] != 200) {
+      print("Status code is NOT 200...");
+      return decodedPlainText;
+    }
+
+    encryptedCurrentStatus = jsonResponseFromGetStatus["message"];
+    plainText = await verifyAndExtractIncommingMessages(encryptedCurrentStatus);
+    decodedPlainText = jsonDecode(plainText);
+    print("Decoded version: ${decodedPlainText}");
+
+    decodedPlainText.forEach((key, value) {
+      print("Key: " + key);
+      print("Value: " + value.toString());
+    });
+    notifyListeners();
+    return decodedPlainText;
+  }
+  
 }
