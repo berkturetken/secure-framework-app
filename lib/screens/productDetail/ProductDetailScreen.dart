@@ -36,22 +36,30 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool status = false;
   bool _isInit = true;
   bool _isLoading = false;
+  bool _isSwitchLoading = false;
   Map<String, int> command = {};
 
   @override
   void didChangeDependencies() {
+    // Providers, Objects and Variables
+    final userProvider = Provider.of<UserProvider>(context);
+    User user = userProvider.user;
+    final arguments = ModalRoute.of(context).settings.arguments;
+    Product currentProduct = arguments;
+
     if (_isInit) {
-      print("Inside isInit.");
+      // Loading starts
       setState(() {
         _isLoading = true;
       });
-      final userProvider = Provider.of<UserProvider>(context);
-      User user = userProvider.user;
-      final arguments = ModalRoute.of(context).settings.arguments;
-      Product currentProduct = arguments;
+
       Provider.of<ProductProvider>(context)
           .fetchAndGetProductStatus(currentProduct.productCode, user.email)
-          .then((_) {
+          .then((value) {
+        // Update the initial condition of the light
+        status = fromIntToBool(value["light"].toInt());
+
+        // Loading ends
         setState(() {
           _isLoading = false;
         });
@@ -105,42 +113,46 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _switch(BuildContext context, User user, Product product) {
-    return FlutterSwitch(
-      value: status,
-      onToggle: (val) async {
-        Map x;
-        print("Val: ${val}");
-        if (val) {
-          command["light"] = 1;
-        } else {
-          command["light"] = 0;
-        }
-        String formattedCommand = json.encode(command);
-        await sendCommand(formattedCommand, user.email, product.productCode);
-        
-        // Try for different ms values for sleep! --> Now, sleep: 0.5 seconds
-        // TODO: What can we do as an alternative?
-        await Future.delayed(Duration(milliseconds: 500));
-        await Provider.of<ProductProvider>(context, listen: false)
-            .fetchAndGetProductStatus(product.productCode, user.email)
-            .then((value) => {
-              x = value
-            });
-        
-        // Retrieved response
-        x.forEach((key, value) {
-          value = value.toInt(); 
-          if ((value == 1 && val) || (value == 0 && !val)) {
-            setState(() {
-              status = val;
-            });
-          }
-          else {
-            _popupWindow(context);
-          }
-         });
-      },
-    );
+    return _isSwitchLoading
+        ? Center(child: CircularProgressIndicator())
+        : FlutterSwitch(
+            value: status,
+            onToggle: (val) async {
+              // Loading starts
+              setState(() {
+                _isSwitchLoading = true;
+              });
+              print("Val: $val");
+              command["light"] = fromBoolToInt(val);
+              
+              String formattedCommand = json.encode(command);
+              await sendCommand(formattedCommand, user.email, product.productCode);
+
+              // Try for different ms values for sleep! --> Now, sleep: 0.5 seconds
+              // TODO: What can we do as an alternative?
+              await Future.delayed(Duration(milliseconds: 500));
+
+              // Below part is going to be changed! Therefore, no need for refactoring
+              await Provider.of<ProductProvider>(context, listen: false)
+                  .fetchAndGetProductStatus(product.productCode, user.email)
+                  .then((response) => {
+                        response.forEach((responseKey, responseValue) {
+                          responseValue = responseValue.toInt();
+                          if ((responseValue == 1 && val) || (responseValue == 0 && !val)) {
+                            setState(() {
+                              _isSwitchLoading = false;
+                              status = val;
+                            });
+                          } else {
+                            setState(() {
+                              _isSwitchLoading = false;
+                            });
+                            _popupWindow(context);
+                          }
+                        })
+                      });
+            },
+          );
   }
 
   // Pop up window
@@ -148,7 +160,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     Alert(
       context: context,
       title: "Sorry :(",
-      desc: "We cannot connect to the IoT Devices",
+      desc: "We cannot connect to the IoT device",
       image: Image.asset("assets/images/cross-2.png"),
       buttons: [
         DialogButton(
@@ -163,6 +175,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         )
       ],
     ).show();
+  }
+
+  // Int to Bool
+  bool fromIntToBool(int number) {
+    // Only, returns "False" if the number is 0. Otherwise, returns "True"
+    if (number == 0)
+      return false;
+    return true;
+  }
+
+  // Bool to Int
+  int fromBoolToInt(bool boolean) {
+    // Only, returns 0 if the boolean is "False". Otherwise, returns 1
+    if (!boolean)
+      return 0;
+    return 1;
   }
 
 }
