@@ -16,37 +16,47 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool status = false;
   Map<String, int> command = {};
-  
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     User user = userProvider.user;
 
     return Scaffold(
-      appBar: AppBar(
-        //automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: Text("Home Page"),
-        backgroundColor: Colors.blue[900],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: user.products.length,
-                itemBuilder: (context, index) => _myProductsCard(user.products[index], context),
-              ),
-            ],
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text("Home Page"),
+          backgroundColor: Colors.blue[900],
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+                  child: Text(
+                    "Most Used Products",
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: user.products.length,
+                  itemBuilder: (context, index) =>
+                      _myProductsCard(user.products[index], context),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      drawer: CustomDrawer()
-    );
+        drawer: CustomDrawer());
   }
 
   Widget _myProductsCard(Product product, BuildContext context) {
@@ -78,7 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     color: Colors.blue,
                     onPressed: () {
-                      Navigator.of(context).pushNamed(ProductDetailScreen.routeName, arguments: product );
+                      Navigator.of(context).pushNamed(
+                          ProductDetailScreen.routeName,
+                          arguments: product);
                     },
                   ),
                 ],

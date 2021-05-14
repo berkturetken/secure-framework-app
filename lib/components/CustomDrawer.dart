@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
-import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:secure_framework_app/screens/login/services/UserData.dart';
+import 'package:secure_framework_app/screens/home/services/ProductData.dart';
+import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -16,6 +18,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    User currentUser = userProvider.user;
 
     return Drawer(
       child: ListView(
@@ -23,7 +26,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
         children: <Widget>[
           _drawerHeader(),
           _drawerItemHomePage(context),
-          _drawerItemMyProducts(context),
+          _drawerItemMyProducts(currentUser, context),
           _drawerItemAddResident(context),
           Divider(),
           _drawerItemLogout(userProvider),
@@ -67,41 +70,35 @@ class _CustomDrawerState extends State<CustomDrawer> {
       },
     );
   }
-  
+
   // Drawer Item - My Products
-  ExpansionTile _drawerItemMyProducts(BuildContext context) {
+  ExpansionTile _drawerItemMyProducts(User user, BuildContext context) {
     return ExpansionTile(
       leading: Icon(Icons.perm_device_information),
       title: Text('My Products'),
       trailing: Icon(Icons.arrow_drop_down),
       children: <Widget>[
-        ListTile(
-          leading: Icon(Icons.home),
-          title: Text('Home Sweet Home'),
-          trailing: Icon(Icons.arrow_right),
-          onTap: () {
-            Navigator.of(context)
-                .pushReplacementNamed(ProductDetailScreen.routeName);
-          },
-        ),
-        ListTile(
-          leading: Icon(Icons.home),
-          title: Text('Summer House'),
-          trailing: Icon(Icons.arrow_right),
-          onTap: () {
-            Navigator.of(context)
-                .pushReplacementNamed(ProductDetailScreen.routeName);
-          },
-        ),
-        ListTile(
-          leading: Icon(Icons.home),
-          title: Text('Rented House-1'),
-          trailing: Icon(Icons.arrow_right),
-          onTap: () {
-            Navigator.pop(context);
-          },
-        ),
+        ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: user.products.length,
+            itemBuilder: (context, index) =>
+                _listTile(user.products[index], context)),
       ],
+    );
+  }
+
+  // List tile - i.e. products
+  ListTile _listTile(Product product, BuildContext context) {
+    return ListTile(
+      leading: Icon(Icons.home),
+      title: Text(product.productName),
+      trailing: Icon(Icons.arrow_right),
+      onTap: () {
+        Navigator.of(context).pushReplacementNamed(
+            ProductDetailScreen.routeName,
+            arguments: product);
+      },
     );
   }
 
@@ -116,7 +113,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
       },
     );
   }
-  
+
   // Drawer Item - Logout
   ListTile _drawerItemLogout(UserProvider userProvider) {
     return ListTile(
@@ -145,5 +142,4 @@ class _CustomDrawerState extends State<CustomDrawer> {
     print("Logging out from the app...");
     Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
   }
-
 }
