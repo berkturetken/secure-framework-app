@@ -9,10 +9,9 @@ import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/signUp/ownerSignUp/OwnerSignUpScreen.dart';
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class LoginForm extends StatefulWidget {
-  //static const routeName = "/login";
-
   @override
   _LoginFormState createState() => _LoginFormState();
 }
@@ -76,48 +75,81 @@ class _LoginFormState extends State<LoginForm> {
             text: "LOGIN",
             buttonType: "Orange",
             press: () async {
-              if (_formKey.currentState.validate()) {
+              if (_formKey.currentState.validate() && errors.isEmpty) {
                 _formKey.currentState.save();
+                // Loading starts
                 setState(() {
                   isLoading = true;
                 });
-              }
 
-              try {
-                print("Email: $email");
-                String hashedPassword = passwordHashing(password);
+                try {
+                  print("Email: $email");
+                  String hashedPassword = passwordHashing(password);
 
-                await Provider.of<UserProvider>(context, listen: false)
-                    .fetchAndSetUser(email, hashedPassword)
-                    .then((_) {});
+                  await Provider.of<UserProvider>(context, listen: false)
+                      .fetchAndSetUser(email, hashedPassword)
+                      .then((_) {});
 
-                final userProvider = Provider.of<UserProvider>(context, listen: false);
-                User currentUser = userProvider.user;
-                
-                // Newly added
-                await Provider.of<ProductProvider>(context, listen: false)
-                    .fetchAndGetProducts(email, currentUser)
-                    .then((_) {});
+                  final userProvider = Provider.of<UserProvider>(context, listen: false);
+                  User currentUser = userProvider.user;
+                  
+                  if (currentUser == null) {
+                    _popupWindow(context);
+                    // Loading ends
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                  else {
+                    await Provider.of<ProductProvider>(context, listen: false)
+                        .fetchAndGetProducts(email, currentUser)
+                        .then((_) {});
 
-                setState(() {
-                  isLoading = false;
-                });
+                    // Loading ends
+                    setState(() {
+                      isLoading = false;
+                    });
 
-                print("Navigating to the home screen");
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomeScreen(),
-                    ),
-                    ModalRoute.withName(HomeScreen.routeName));
-              } catch (e) {
-                setState(() {
-                  isLoading = false;
-                });
-                print("An error occured: " + e.toString());
+                    print("Navigating to the home screen");
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomeScreen(),
+                        ),
+                        ModalRoute.withName(HomeScreen.routeName));
+                  }
+                } catch (e) {
+                  // Loading ends
+                  setState(() {
+                    isLoading = false;
+                  });
+                  print("An error occured: " + e.toString());
+                }
               }
             },
           );
+  }
+
+  // Pop-up window
+  _popupWindow(context) {
+    Alert(
+      context: context,
+      title: "Sorry :(",
+      desc: "Your email address or password is incorrect!",
+      image: Image.asset("assets/images/cross-2.png"),
+      buttons: [
+        DialogButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            "Take Me Back",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        )
+      ],
+    ).show();
   }
 
   // Email Form Field
@@ -130,7 +162,7 @@ class _LoginFormState extends State<LoginForm> {
           setState(() {
             errors.remove(EmailNullError);
           });
-        } else if (emailValidationRegExp.hasMatch(value) &&
+        } else if ((emailValidationRegExp.hasMatch(value) || value.isEmpty) &&
             errors.contains(InvalidEmailError)) {
           setState(() {
             errors.remove(InvalidEmailError);
@@ -139,11 +171,12 @@ class _LoginFormState extends State<LoginForm> {
         return null;
       },
       validator: (value) {
-        if (value.isEmpty && !errors.contains(EmailNullError)) {
+        if (value.isEmpty &&  !errors.contains(EmailNullError)) {
           setState(() {
             errors.add(EmailNullError);
           });
-        } else if (!emailValidationRegExp.hasMatch(value) &&
+        } else if (value.isNotEmpty &&
+            !emailValidationRegExp.hasMatch(value) &&
             !errors.contains(InvalidEmailError)) {
           setState(() {
             errors.add(InvalidEmailError);
@@ -165,10 +198,6 @@ class _LoginFormState extends State<LoginForm> {
           setState(() {
             errors.remove(PasswordNullError);
           });
-        } else if (value.length >= 8 && errors.contains(ShortPasswordError)) {
-          setState(() {
-            errors.remove(ShortPasswordError);
-          });
         }
         return null;
       },
@@ -176,10 +205,6 @@ class _LoginFormState extends State<LoginForm> {
         if (value.isEmpty && !errors.contains(PasswordNullError)) {
           setState(() {
             errors.add(PasswordNullError);
-          });
-        } else if (value.length < 8 && !errors.contains(ShortPasswordError)) {
-          setState(() {
-            errors.add(ShortPasswordError);
           });
         }
         return null;

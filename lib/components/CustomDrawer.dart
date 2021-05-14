@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
-import 'package:secure_framework_app/screens/login/components/loginForm.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
 import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
 import 'package:provider/provider.dart';
-import 'package:secure_framework_app/screens/login/services/UserData.dart';
 
 class CustomDrawer extends StatefulWidget {
   @override
@@ -18,7 +16,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    User currentUser = userProvider.user;
 
     return Drawer(
       child: ListView(
@@ -29,7 +26,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           _drawerItemMyProducts(context),
           _drawerItemAddResident(context),
           Divider(),
-          _drawerItemLogout(currentUser),
+          _drawerItemLogout(userProvider),
           _drawerItemAppVersion(),
         ],
       ),
@@ -121,13 +118,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
   
   // Drawer Item - Logout
-  ListTile _drawerItemLogout(User currentUser) {
+  ListTile _drawerItemLogout(UserProvider userProvider) {
     return ListTile(
       leading: Icon(Icons.logout),
       title: Text('Logout'),
       //trailing: Icon(Icons.arrow_right),
       onTap: () {
-        _logout(currentUser);
+        _logout(userProvider);
       },
     );
   }
@@ -141,10 +138,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   // Logout Process
-  _logout(User currentUser) async {
+  _logout(UserProvider userProvider) async {
     final storage = Storage;
     await storage.deleteAll();
-    currentUser.dispose();
+    userProvider.deleteCurrentUser();
     print("Logging out from the app...");
     Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
   }

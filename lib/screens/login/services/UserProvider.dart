@@ -6,15 +6,39 @@ import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
 class UserProvider with ChangeNotifier {
   User _user;
 
+  // Getter
   User get user => _user;
+
+  // Setter
+  // set user (User u) {
+  //   _user.email = u.email;
+  //   _user.masterKey = u.masterKey;
+  //   _user.products = u.products;
+  // }
+
+  // Delete user
+  void deleteCurrentUser() {
+    _user = null;
+  }
 
   Future<void> fetchAndSetUser(String email, String password) async {
     String nonce, encryptedNonce, encryptedMasterKey, masterKey;
     
     Map jsonResponsefromGetNonce = await getNonce(email);
-    if (jsonResponsefromGetNonce != null) {
-      nonce = jsonResponsefromGetNonce["message"];
+    
+    // Null check
+    if (jsonResponsefromGetNonce == null) {
+      print("jsonResponseFromGetNonce is null...");
+      return;
     }
+
+    // Error check
+    if (jsonResponsefromGetNonce["statusCode"] == 400) {
+      print("jsonResponseFromGetNonce returned 400...");
+      return;
+    }
+
+    nonce = jsonResponsefromGetNonce["message"];
     print("Nonce: " + nonce);
 
     // Kev and iv arrangement
@@ -42,4 +66,5 @@ class UserProvider with ChangeNotifier {
     _user = user;
     notifyListeners();
   }
+
 }

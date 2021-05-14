@@ -77,6 +77,7 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
             press: () async {
               if (_formKey.currentState.validate() && errors.isEmpty) {
                 _formKey.currentState.save();
+                // Loading starts
                 setState(() {
                   isLoading = true;
                 });
@@ -94,8 +95,9 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
 
                 String formattedData = jsonEncode(data);
                 print(formattedData);
-
                 dynamic response = await beginOwnerSignUp(formattedData);
+                
+                // Loading ends
                 setState(() {
                   isLoading = false;
                 });

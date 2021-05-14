@@ -55,7 +55,7 @@ class ProductProvider with ChangeNotifier {
     encryptedCurrentStatus = jsonResponseFromGetStatus["message"];
     plainText = await verifyAndExtractIncommingMessages(encryptedCurrentStatus);
     decodedPlainText = jsonDecode(plainText);
-    print("Decoded version: ${decodedPlainText}");
+    print("Decoded version: $decodedPlainText");
 
     decodedPlainText.forEach((key, value) {
       print("Key: " + key);
