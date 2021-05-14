@@ -26,13 +26,13 @@ class UserProvider with ChangeNotifier {
     
     Map jsonResponsefromGetNonce = await getNonce(email);
     
-    // Null check
+    // Null Check
     if (jsonResponsefromGetNonce == null) {
       print("jsonResponseFromGetNonce is null...");
       return;
     }
 
-    // Error check
+    // Error Check
     if (jsonResponsefromGetNonce["statusCode"] == 400) {
       print("jsonResponseFromGetNonce returned 400...");
       return;
@@ -49,10 +49,20 @@ class UserProvider with ChangeNotifier {
     print("Encrypted Nonce (Key is the hashed password): " + encryptedNonce);
     
     Map jsonResponseFromValidateLogin = await validateLogin(email, encryptedNonce);
-    if (jsonResponseFromValidateLogin != null) {
-      encryptedMasterKey = jsonResponseFromValidateLogin["message"];
+    
+    // Null Check
+    if (jsonResponseFromValidateLogin == null) {
+      print("jsonResponseFromValidateLogin is null...");
+      return;
     }
 
+    // Error Check
+    if (jsonResponseFromValidateLogin["statusCode"] == 400) {
+      print("jsonResponseFromValidateLogin returned 400...");
+      return;
+    }
+
+    encryptedMasterKey = jsonResponseFromValidateLogin["message"];
     masterKey = decryption(encryptedMasterKey, key, iv);
     print("Master Key: " + masterKey);
 
