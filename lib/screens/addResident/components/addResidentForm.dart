@@ -44,7 +44,8 @@ class _AddResidentFormState extends State<AddResidentForm> {
     final userProvider = Provider.of<UserProvider>(context);
     User currentUser = userProvider.user;
     List<Product> products = currentUser.products;
-    Product defaultProduct = products[0];
+    List<Product> ownerProducts = getOwnerProducts(products);
+    Product defaultProduct = ownerProducts[0];
 
     return Form(
       key: _formKey,
@@ -52,7 +53,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
         children: [
           buildEmailFormField(),
           SizedBox(height: 20),
-          buildProductCodeFormField(products, defaultProduct),
+          buildProductCodeFormField(ownerProducts, defaultProduct),
           SizedBox(height: 10),
           FormError(errors: errors),
           SizedBox(height: 10),
@@ -60,6 +61,17 @@ class _AddResidentFormState extends State<AddResidentForm> {
         ],
       ),
     );
+  }
+
+  // Get the products that the current user is in an Owner Role
+  List<Product> getOwnerProducts(List<Product> p) {
+    List<Product> ownerProducts = [];
+    p.forEach((product) { 
+      if (product.roleID == 2) {
+        ownerProducts.add(product);
+      }
+    });
+    return ownerProducts;
   }
 
   // 'Add New Resident' Button

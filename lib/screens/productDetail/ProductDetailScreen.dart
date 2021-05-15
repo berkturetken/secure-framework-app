@@ -12,7 +12,7 @@ import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
-Future<void> sendCommand(String command, String email, String productCode) async {
+Future<bool> sendCommand(String command, String email, String productCode) async {
   final storage = Storage;
   String aesKey = await storage.read(key: "AES-Key");
   String iv = await storage.read(key: "IV");
@@ -23,6 +23,17 @@ Future<void> sendCommand(String command, String email, String productCode) async
   String arrangedCommand = arrangeCommand(encryptedCommand, command, hmacKey);
 
   Map jsonResponseFromSendMessage = await sendMessage(arrangedCommand, email, productCode);
+
+  // Null Check
+  if (jsonResponseFromSendMessage == null) {
+    return false;
+  }
+
+  // Error Check
+  if (jsonResponseFromSendMessage["statusCode"] == 400) {
+    return false;
+  }
+  return true;
 }
 
 class ProductDetailScreen extends StatefulWidget {
@@ -124,33 +135,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               });
               print("Val: $val");
               command["light"] = fromBoolToInt(val);
-              
+
               String formattedCommand = json.encode(command);
-              await sendCommand(formattedCommand, user.email, product.productCode);
+              bool response = await sendCommand(formattedCommand, user.email, product.productCode);
 
-              // Try for different ms values for sleep! --> Now, sleep: 0.5 seconds
-              // TODO: What can we do as an alternative?
-              await Future.delayed(Duration(milliseconds: 500));
+              // Loading ends
+              setState(() {
+                _isSwitchLoading = false;
+              });
 
-              // Below part is going to be changed! Therefore, no need for refactoring
-              await Provider.of<ProductProvider>(context, listen: false)
-                  .fetchAndGetProductStatus(product.productCode, user.email)
-                  .then((response) => {
-                        response.forEach((responseKey, responseValue) {
-                          responseValue = responseValue.toInt();
-                          if ((responseValue == 1 && val) || (responseValue == 0 && !val)) {
-                            setState(() {
-                              _isSwitchLoading = false;
-                              status = val;
-                            });
-                          } else {
-                            setState(() {
-                              _isSwitchLoading = false;
-                            });
-                            _popupWindow(context);
-                          }
-                        })
-                      });
+              if (response) {
+                status = val;
+              }
+              else {
+                _popupWindow(context);
+              }
             },
           );
   }
@@ -160,7 +159,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     Alert(
       context: context,
       title: "Sorry :(",
-      desc: "We cannot connect to the IoT device",
+      desc: "IoT is not connected.",
       image: Image.asset("assets/images/cross-2.png"),
       buttons: [
         DialogButton(
@@ -180,17 +179,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   // Int to Bool
   bool fromIntToBool(int number) {
     // Only, returns "False" if the number is 0. Otherwise, returns "True"
-    if (number == 0)
-      return false;
+    if (number == 0) return false;
     return true;
   }
 
   // Bool to Int
   int fromBoolToInt(bool boolean) {
     // Only, returns 0 if the boolean is "False". Otherwise, returns 1
-    if (!boolean)
-      return 0;
+    if (!boolean) return 0;
     return 1;
   }
-
 }

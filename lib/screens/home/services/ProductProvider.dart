@@ -6,7 +6,13 @@ import '../services/ProductData.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
 
 class ProductProvider with ChangeNotifier {
+  /*
+  Product _product;
 
+  // Getter
+  Product get product => _product;
+  */
+  
   Future<void> fetchAndGetProducts(String email, User user) async {
     List<Product> products = new List();
     String encryptedProducts, plainText;
