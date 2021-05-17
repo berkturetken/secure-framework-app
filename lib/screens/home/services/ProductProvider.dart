@@ -53,7 +53,7 @@ class ProductProvider with ChangeNotifier {
       Product tempProduct = new Product(
         productCode: decodedPlainText[i]['productCode'],
         productName: decodedPlainText[i]['productName'],
-        roleIDs: decodedPlainText[i]['roleId']
+        roleIDs: decodedPlainText[i]['roleID']
       );
       products.add(tempProduct);
     }

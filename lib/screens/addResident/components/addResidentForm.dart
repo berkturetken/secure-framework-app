@@ -57,7 +57,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
           SizedBox(height: 10),
           FormError(errors: errors),
           SizedBox(height: 10),
-          _addNewResidentButton(currentUser),
+          _addNewResidentButton(currentUser, defaultProduct),
         ],
       ),
     );
@@ -65,17 +65,17 @@ class _AddResidentFormState extends State<AddResidentForm> {
 
   // Get the products that the current user has an Owner Role
   List<Product> getOwnerProducts(List<Product> p) {
-    List<Product> ownerProducts = [];
+    List<Product> ownerP = [];
     p.forEach((product) { 
       if (product.roleIDs.contains(2)) {
-        ownerProducts.add(product);
+        ownerP.add(product);
       }
     });
-    return ownerProducts;
+    return ownerP;
   }
 
   // 'Add New Resident' Button
-  Widget _addNewResidentButton(User currentUser) {
+  Widget _addNewResidentButton(User currentUser, Product defaultProduct) {
     return isLoading
         ? Center(child: CircularProgressIndicator())
         : DefaultButton(
@@ -91,9 +91,8 @@ class _AddResidentFormState extends State<AddResidentForm> {
                 // If dropdown menu is never used, then productCode is null.
                 // Therefore, get the productCode of the first product of the current user's products
                 if (productCode == null) {
-                  productCode = currentUser.products[0].productCode;
+                  productCode = defaultProduct.productCode;
                 }
-
                 var data = {'email': email, 'productCode': productCode};
                 String formattedData = jsonEncode(data);
 
