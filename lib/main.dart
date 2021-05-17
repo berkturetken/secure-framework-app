@@ -3,6 +3,7 @@ import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart'
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
+import 'package:secure_framework_app/screens/manageProduct/ManageProductScreen.dart';
 import 'package:secure_framework_app/screens/productDetail/ProductDetailScreen.dart';
 import 'screens/signUp/ownerSignUp/OwnerSignUpScreen.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
           HomeScreen.routeName: (context) => HomeScreen(),
           ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
           AddResidentScreen.routeName: (context) => AddResidentScreen(),
+          ManageProductScreen.routeName: (context) => ManageProductScreen(),
         },
       ),
     );

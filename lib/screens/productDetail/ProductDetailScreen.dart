@@ -11,6 +11,7 @@ import 'package:secure_framework_app/components/CustomDrawer.dart';
 import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:secure_framework_app/screens/manageProduct/ManageProductScreen.dart';
 
 Future<bool> sendCommand(String command, String email, String productCode) async {
   final storage = Storage;
@@ -95,6 +96,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               centerTitle: true,
               title: Text("Product Detail"),
               backgroundColor: Colors.blue[900],
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    Icons.people,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(ManageProductScreen.routeName);
+                  },
+                ),
+              ],
             ),
             body: SingleChildScrollView(
               child: Padding(
