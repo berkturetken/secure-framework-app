@@ -20,14 +20,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final userProvider = Provider.of<UserProvider>(context);
     final productProvider = Provider.of<ProductProvider>(context);
     User user = userProvider.user;
+    print("User Email:" + user.email);
+    print("First Product Name of the current user: " + user.products[0].productName);
 
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text("Home Page"),
-          backgroundColor: Colors.blue[900],
-        ),
-        body: SingleChildScrollView(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("Home Page"),
+        backgroundColor: Colors.blue[900],
+      ),
+      body: RefreshIndicator(
+        child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.all(20.0),
             child: Column(
@@ -48,13 +51,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: user.products.length,
-                  itemBuilder: (context, index) => _myProductsCard(user.products[index], productProvider, context),
+                  itemBuilder: (context, index) => _myProductsCard(
+                      user.products[index], productProvider, context),
                 ),
               ],
             ),
           ),
         ),
-        drawer: CustomDrawer());
+        onRefresh: () => _fetchProductsAgain(user),
+      ),
+      drawer: CustomDrawer(),
+    );
+  }
+
+  // Get the products when scrolled down
+  Future<void> _fetchProductsAgain(User currentUser) async {
+    await Provider.of<ProductProvider>(context, listen: false)
+        .fetchAndGetProducts(currentUser.email, currentUser)
+        .then((_) {});
   }
 
   // Product Card
@@ -128,5 +142,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 }
