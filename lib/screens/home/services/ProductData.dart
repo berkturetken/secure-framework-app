@@ -10,11 +10,11 @@ enum Roles {
 class Product with ChangeNotifier {
   final String productCode;
   final String productName;
-  final int roleID;
+  final List<dynamic> roleIDs;
 
   Product({
     @required this.productCode,
     @required this.productName,
-    @required this.roleID
+    @required this.roleIDs
   });
 }

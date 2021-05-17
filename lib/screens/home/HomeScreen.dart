@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Container(
                 child: Text(
-                  productProvider.getUserRole(product.roleID),
+                  productProvider.getUserRole(product.roleIDs),
                   style: TextStyle(
                     fontSize: 18,
                   ),

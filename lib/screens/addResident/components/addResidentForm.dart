@@ -63,11 +63,11 @@ class _AddResidentFormState extends State<AddResidentForm> {
     );
   }
 
-  // Get the products that the current user is in an Owner Role
+  // Get the products that the current user has an Owner Role
   List<Product> getOwnerProducts(List<Product> p) {
     List<Product> ownerProducts = [];
     p.forEach((product) { 
-      if (product.roleID == 2) {
+      if (product.roleIDs.contains(2)) {
         ownerProducts.add(product);
       }
     });

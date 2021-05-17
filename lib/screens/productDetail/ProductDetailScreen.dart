@@ -113,7 +113,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                         ),
-                        userProvider.isOwnerOnThisProduct(currentProduct.roleID)
+                        userProvider.isOwnerOnThisProduct(currentProduct.roleIDs)
                             ? _switch(context, user, currentProduct)
                             : SizedBox.shrink(),
                       ],

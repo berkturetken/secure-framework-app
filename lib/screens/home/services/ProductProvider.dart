@@ -16,8 +16,13 @@ class ProductProvider with ChangeNotifier {
   List<String> userRoles = ["", "Resident", "Owner", "Technical Service"];
 
   // Get User Role for a given role Id
-  String getUserRole(int roleID) {
-    return userRoles[roleID];
+  String getUserRole(List<dynamic> roleIDs) {
+    int size = roleIDs.length;
+    String roles = "";
+    for(var i = 0; i < size; i++) {
+      roles += userRoles[roleIDs[i]] + " - "; 
+    }
+    return roles;
   }
   
   Future<void> fetchAndGetProducts(String email, User user) async {
@@ -29,18 +34,26 @@ class ProductProvider with ChangeNotifier {
 
     // Null check
     if (jsonResponseFromGetProducts == null) {
+      print("jsonResponseFromGetProducts is null...");
+      return;
+    }
+
+    // Error check
+    if (jsonResponseFromGetProducts["statusCode"] != 200) {
+      print("jsonResponseFromGetProducts did NOT return 200...");
       return;
     }
 
     encryptedProducts = jsonResponseFromGetProducts["message"];
     plainText = await verifyAndExtractIncommingMessages(encryptedProducts);
+    // plainText = Decrypted products
     decodedPlainText = jsonDecode(plainText);
 
     for (var i = 0; i < decodedPlainText.length; i++) {
       Product tempProduct = new Product(
         productCode: decodedPlainText[i]['productCode'],
         productName: decodedPlainText[i]['productName'],
-        roleID: decodedPlainText[i]['roleId']
+        roleIDs: decodedPlainText[i]['roleId']
       );
       products.add(tempProduct);
     }

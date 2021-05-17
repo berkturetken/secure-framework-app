@@ -22,7 +22,7 @@ class UserProvider with ChangeNotifier {
     // False if a user is NOT an Owner of any product
     // RoleID: 2 --> HouseOwner
     for (var i=0; i < _user.products.length; i++) {
-      if (_user.products[i].roleID == 2) {
+      if (_user.products[i].roleIDs.contains(2)) {
         return true;
       }
     }
@@ -30,8 +30,8 @@ class UserProvider with ChangeNotifier {
   }
 
   // Is the current user has an Owner Role on that product?
-  bool isOwnerOnThisProduct(int currentProductRoleID) {
-    return currentProductRoleID == 1;
+  bool isOwnerOnThisProduct(List<dynamic> currentProductRoleIDs) {
+    return currentProductRoleIDs.contains(1);
   }
 
   // Delete user
