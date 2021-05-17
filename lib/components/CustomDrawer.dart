@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:secure_framework_app/screens/addResident/AddResidentScreen.dart';
 import 'package:secure_framework_app/screens/home/HomeScreen.dart';
-import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 import 'package:secure_framework_app/screens/login/loginScreen.dart';
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
@@ -27,7 +26,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           _drawerHeader(),
           _drawerItemHomePage(context),
           _drawerItemMyProducts(currentUser, context),
-          isOwner(currentUser) == true ? _drawerItemAddResident(context) : SizedBox.shrink(),
+          userProvider.isOwner() ? _drawerItemAddResident(context) : SizedBox.shrink(),
           Divider(
             color: Colors.black,
             thickness: 1.5,
@@ -37,18 +36,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
         ],
       ),
     );
-  }
-
-  // Does the current user have an "Owner" Role?
-  bool isOwner(User user) {
-    List<Product> products = user.products;
-    int productSize = products.length;
-    for (var i=0; i < productSize; i++) {
-      if (products[i].roleID == 2) {
-        return true;
-      }
-    }
-    return false;   
   }
 
   // Drawer Header

@@ -16,6 +16,24 @@ class UserProvider with ChangeNotifier {
   //   _user.products = u.products;
   // }
 
+  // Decides whether a user has an Owner Role or not
+  bool isOwner() {
+    // True if a user is an Owner of at least one product
+    // False if a user is NOT an Owner of any product
+    // RoleID: 2 --> HouseOwner
+    for (var i=0; i < _user.products.length; i++) {
+      if (_user.products[i].roleID == 2) {
+        return true;
+      }
+    }
+    return false;   
+  }
+
+  // Is the current user has an Owner Role on that product?
+  bool isOwnerOnThisProduct(int currentProductRoleID) {
+    return currentProductRoleID == 1;
+  }
+
   // Delete user
   void deleteCurrentUser() {
     _user = null;

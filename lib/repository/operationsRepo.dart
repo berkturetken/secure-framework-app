@@ -80,7 +80,7 @@ Future<Map> getStatus(String productCode, String email) async {
     responseJson = jsonDecode(response.body);
     print(responseJson);
   } on Exception catch(_) {
-    print("Exception occurs in addNewResident() - operationsRepo...");
+    print("Exception occurs in getStatus() - operationsRepo...");
   }
   return responseJson;
 }

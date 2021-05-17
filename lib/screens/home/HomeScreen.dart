@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
@@ -14,12 +15,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool status = false;
-  Map<String, int> command = {};
-
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final productProvider = Provider.of<ProductProvider>(context);
     User user = userProvider.user;
 
     return Scaffold(
@@ -49,8 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   itemCount: user.products.length,
-                  itemBuilder: (context, index) =>
-                      _myProductsCard(user.products[index], context),
+                  itemBuilder: (context, index) => _myProductsCard(user.products[index], productProvider, context),
                 ),
               ],
             ),
@@ -59,7 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
         drawer: CustomDrawer());
   }
 
-  Widget _myProductsCard(Product product, BuildContext context) {
+  // Product Card
+  // TODO: Refactor the below function
+  Widget _myProductsCard(Product product, ProductProvider productProvider, BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.33,
       child: Card(
@@ -109,6 +109,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+              Container(
+                child: Text(
+                  productProvider.getUserRole(product.roleID),
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ],
           ),
         ),
@@ -119,4 +128,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
 }

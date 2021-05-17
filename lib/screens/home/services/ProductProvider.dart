@@ -12,6 +12,13 @@ class ProductProvider with ChangeNotifier {
   // Getter
   Product get product => _product;
   */
+
+  List<String> userRoles = ["", "Resident", "Owner", "Technical Service"];
+
+  // Get User Role for a given role Id
+  String getUserRole(int roleID) {
+    return userRoles[roleID];
+  }
   
   Future<void> fetchAndGetProducts(String email, User user) async {
     List<Product> products = new List();
@@ -43,7 +50,7 @@ class ProductProvider with ChangeNotifier {
 
   Future<Map> fetchAndGetProductStatus(String productCode, String email) async {
     String encryptedCurrentStatus, plainText;
-    Map decodedPlainText;
+    Map decodedPlainText = {};
     Map jsonResponseFromGetStatus = await getStatus(productCode, email);
 
     // Null check

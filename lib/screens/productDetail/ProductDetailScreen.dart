@@ -22,7 +22,8 @@ Future<bool> sendCommand(String command, String email, String productCode) async
   print("Encrypted Message: " + encryptedCommand);
   String arrangedCommand = arrangeCommand(encryptedCommand, command, hmacKey);
 
-  Map jsonResponseFromSendMessage = await sendMessage(arrangedCommand, email, productCode);
+  Map jsonResponseFromSendMessage =
+      await sendMessage(arrangedCommand, email, productCode);
 
   // Null Check
   if (jsonResponseFromSendMessage == null) {
@@ -112,7 +113,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                         ),
-                        _switch(context, user, currentProduct),
+                        userProvider.isOwnerOnThisProduct(currentProduct.roleID)
+                            ? _switch(context, user, currentProduct)
+                            : SizedBox.shrink(),
                       ],
                     ),
                   ],
@@ -123,6 +126,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           );
   }
 
+  // Light Switch
   Widget _switch(BuildContext context, User user, Product product) {
     return _isSwitchLoading
         ? Center(child: CircularProgressIndicator())
