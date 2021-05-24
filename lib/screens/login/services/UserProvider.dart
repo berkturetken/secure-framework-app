@@ -29,9 +29,14 @@ class UserProvider with ChangeNotifier {
     return false;   
   }
 
-  // Is the current user has an Owner Role on that product?
-  bool isOwnerOnThisProduct(List<dynamic> currentProductRoleIDs) {
+  // Does the current user have a Resident Role on that product?
+  bool isResidentOnThisProduct(List<dynamic> currentProductRoleIDs) {
     return currentProductRoleIDs.contains(1);
+  }
+
+  // Does the current user have an Owner Role on that product?
+  bool isOwnerOnThisProduct(List<dynamic> currentProductRoleIDs) {
+    return currentProductRoleIDs.contains(2);
   }
 
   // Delete user

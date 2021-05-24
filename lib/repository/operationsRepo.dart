@@ -105,3 +105,26 @@ Future<Map> getUsers(String productCode, String email) async {
   }
   return responseJson;
 }
+
+Future<Map> deleteResident(String email, String deletedEmail, String message) async {
+  var responseJson;
+  final body = {
+    "email": email,
+    "deletedEmail": deletedEmail,
+    "message": message
+  };
+  final jsonString = json.encode(body);
+  
+  try {
+    final response = await http.post(
+      'https://h24q9fa19h.execute-api.eu-central-1.amazonaws.com/test/delete-resident',
+      body: jsonString
+    );
+    responseJson = jsonDecode(response.body);
+    print(responseJson);
+  } on Exception catch(_) {
+    print("Exception occurs in deleteResident() - operationsRepo...");
+  }
+  return responseJson;
+}
+

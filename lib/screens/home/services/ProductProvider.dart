@@ -12,7 +12,7 @@ class ProductProvider with ChangeNotifier {
   // Getter
   Product get product => _product;
   */
-
+  
   List<String> userRoles = ["", "Resident", "Owner", "Technical Service"];
 
   // Get User Role for a given role Id

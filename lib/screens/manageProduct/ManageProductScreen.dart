@@ -1,10 +1,33 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:secure_framework_app/components/CustomDrawer.dart';
 import 'package:provider/provider.dart';
+import 'package:secure_framework_app/crypto/cryptographicOperations.dart';
+import 'package:secure_framework_app/repository/operationsRepo.dart';
 import 'package:secure_framework_app/screens/login/services/UserProvider.dart';
 import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 import 'package:secure_framework_app/screens/home/services/ProductProvider.dart';
+import 'package:secure_framework_app/components/constants.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+Future<dynamic> clickDeleteResident(
+    String email, String deletedEmail, String productCode) async {
+  final storage = Storage;
+  String aesKey = await storage.read(key: "AES-Key");
+  String iv = await storage.read(key: "IV");
+  String hmacKey = await storage.read(key: "HMAC-Key");
+
+  String encryptedMessage = encryptionAES(productCode, aesKey, iv);
+  print("Encrypted Message in manage product screen: " + encryptedMessage);
+
+  String arrangedCommand =
+      arrangeCommand(encryptedMessage, productCode, hmacKey);
+  Map jsonResponseFromDeleteResident =
+      await deleteResident(email, deletedEmail, arrangedCommand);
+  return jsonResponseFromDeleteResident;
+}
 
 class ManageProductScreen extends StatefulWidget {
   static const routeName = "/manageProduct";
@@ -51,11 +74,16 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    User currentUser = userProvider.user;
+    final arguments = ModalRoute.of(context).settings.arguments;
+    Product currentProduct = arguments;
+
     return _isLoading
         ? Container(
-          child: Center(child: CircularProgressIndicator()),
-          color: Colors.white,
-        )
+            child: Center(child: CircularProgressIndicator()),
+            color: Colors.white,
+          )
         : Scaffold(
             appBar: AppBar(
               centerTitle: true,
@@ -73,8 +101,8 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
                       physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemCount: tempList.length,
-                      itemBuilder: (context, index) =>
-                          _usersCard(context, tempList[index]),
+                      itemBuilder: (context, index) => _usersCard(context,
+                          tempList[index], userProvider, currentProduct),
                     ),
                   ],
                 ),
@@ -99,7 +127,8 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
   }
 
   // Users Card
-  Widget _usersCard(BuildContext context, var users) {
+  Widget _usersCard(BuildContext context, var users, UserProvider userProvider,
+      Product currentProduct) {
     return Card(
       elevation: 6.0,
       margin: EdgeInsets.fromLTRB(0, 0, 0, 30),
@@ -120,32 +149,84 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
               style: TextStyle(color: getColor(users["roleId"])),
             ),
           ),
-          Row(
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 0, 10),
-                child: OutlinedButton.icon(
-                  icon: Icon(
-                    Icons.delete,
-                    size: 18,
-                    color: Colors.red,
-                  ),
-                  label: Text(
-                    "Remove Resident",
-                    style: TextStyle(
-                      color: Colors.red,
-                    ),
-                  ),
-                  onPressed: () {
-                    print("Clicked 'Remove Resident'");
-                  },
-                ),
-              ),
-            ],
-          ),
+          userProvider.isOwnerOnThisProduct(currentProduct.roleIDs)
+              ? Row(
+                  children: <Widget>[
+                    _deleteResidentButton(
+                        userProvider.user, users["email"], currentProduct),
+                  ],
+                )
+              : SizedBox.shrink(),
         ],
       ),
     );
+  }
+
+  // 'Delete Resident' Button
+  Padding _deleteResidentButton(
+      User currentUser, String deletedEmail, Product currentProduct) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 0, 0, 10),
+      child: OutlinedButton.icon(
+        icon: Icon(
+          Icons.delete,
+          size: 18,
+          color: Colors.red,
+        ),
+        label: Text(
+          "Remove Resident",
+          style: TextStyle(
+            color: Colors.red,
+          ),
+        ),
+        onPressed: () {
+          print("Clicked 'Remove Resident'");
+          _popupWindow(context, currentUser, deletedEmail, currentProduct);
+        },
+      ),
+    );
+  }
+
+  // Pop-up window
+  _popupWindow(BuildContext context, User currentUser, String deletedEmail,
+      Product currentProduct) {
+    Alert(
+      context: context,
+      title: "Removing a resident...",
+      desc: "Are you really want to remove this user?",
+      buttons: [
+        DialogButton(
+          onPressed: () async {
+            String formattedData = jsonEncode(currentProduct.productCode);
+            print("Pressed product code: " + currentProduct.productCode);
+            dynamic response = await clickDeleteResident(
+                currentUser.email, deletedEmail, formattedData);
+
+            print("Delete operation is handled...");
+            // Navigator.pop(context)
+          },
+          color: Colors.red[800],
+          child: Text(
+            "Yes",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ),
+        DialogButton(
+          onPressed: () => Navigator.pop(context),
+          color: Colors.green[700],
+          child: Text(
+            "No",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
+        ),
+      ],
+    ).show();
   }
 
   // RoleID to Role Names
@@ -157,7 +238,6 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
   // Get corresponding color for the given RoleID
   Color getColor(int roleId) {
     List<Color> colors = [Colors.blue[700], Colors.green[700], Colors.red[700]];
-    return colors[roleId-1];
+    return colors[roleId - 1];
   }
-
 }

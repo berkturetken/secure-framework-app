@@ -86,7 +86,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   // TODO: Refactor the below code!
-
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -129,8 +128,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           _lightLabel(),
-                          userProvider
-                                  .isOwnerOnThisProduct(currentProduct.roleIDs)
+                          userProvider.isResidentOnThisProduct(currentProduct.roleIDs)
                               ? _switch(context, user, currentProduct)
                               : SizedBox.shrink(),
                         ],
@@ -144,7 +142,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           _temperatureLabel(),
-                          userProvider.isOwnerOnThisProduct(currentProduct.roleIDs)
+                          userProvider.isResidentOnThisProduct(currentProduct.roleIDs)
                               ? Text(temperature.toString(),
                                   style: TextStyle(fontSize: 20))
                               : SizedBox.shrink(),
@@ -265,4 +263,5 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (!boolean) return 0;
     return 1;
   }
+
 }
