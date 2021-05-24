@@ -70,7 +70,10 @@ class _LoginFormState extends State<LoginForm> {
   // Login Button
   Widget _loginButton() {
     return isLoading
-        ? Center(child: CircularProgressIndicator())
+        ? Container(
+          child: Center(child: CircularProgressIndicator()),
+          color: Colors.white,
+        )
         : DefaultButton(
             text: "LOGIN",
             buttonType: "Orange",

@@ -20,8 +20,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final userProvider = Provider.of<UserProvider>(context);
     final productProvider = Provider.of<ProductProvider>(context);
     User user = userProvider.user;
-    print("User Email:" + user.email);
-    print("First Product Name of the current user: " + user.products[0].productName);
+    // Prints multiple times
+    // print("User Email:" + user.email);
+    // print("First Product Name of the current user: " + user.products[0].productName);
 
     return Scaffold(
       appBar: AppBar(
@@ -142,4 +143,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
 }

@@ -71,7 +71,10 @@ class _OwnerSignUpFormState extends State<OwnerSignUpForm> {
   // 'Create an Account' Button
   Widget _createAnAccountButton() {
     return isLoading
-        ? Center(child: CircularProgressIndicator())
+        ? Container(
+          child: Center(child: CircularProgressIndicator()),
+          color: Colors.white,
+        )
         : DefaultButton(
             text: "Create an Account",
             press: () async {

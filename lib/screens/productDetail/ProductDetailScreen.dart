@@ -51,6 +51,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isLoading = false;
   bool _isSwitchLoading = false;
   Map<String, int> command = {};
+  double temperature;
 
   @override
   void didChangeDependencies() {
@@ -71,6 +72,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           .then((value) {
         // Update the initial condition of the light
         status = fromIntToBool(value["light"].toInt());
+        temperature = value["temp"];
+        print("Temp is " + temperature.toString());
 
         // Loading ends
         setState(() {
@@ -82,6 +85,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.didChangeDependencies();
   }
 
+  // TODO: Refactor the below code!
+
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
@@ -90,7 +95,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     Product currentProduct = arguments;
 
     return _isLoading
-        ? Center(child: CircularProgressIndicator())
+        ? Container(
+          child: Center(child: CircularProgressIndicator()),
+          color: Colors.white,
+        )
         : Scaffold(
             appBar: AppBar(
               centerTitle: true,
@@ -102,45 +110,98 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     Icons.people,
                   ),
                   onPressed: () {
-                    Navigator.of(context).pushNamed(ManageProductScreen.routeName);
+                    Navigator.of(context).pushNamed(
+                        ManageProductScreen.routeName,
+                        arguments: currentProduct);
                   },
                 ),
               ],
             ),
-            body: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Container(
-                          child: Text(
-                            "Living Room - Light 1",
-                            style: TextStyle(
-                              fontSize: 17,
-                            ),
-                          ),
-                        ),
-                        userProvider.isOwnerOnThisProduct(currentProduct.roleIDs)
-                            ? _switch(context, user, currentProduct)
-                            : SizedBox.shrink(),
-                      ],
-                    ),
-                  ],
+            body: RefreshIndicator(
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          _lightLabel(),
+                          userProvider
+                                  .isOwnerOnThisProduct(currentProduct.roleIDs)
+                              ? _switch(context, user, currentProduct)
+                              : SizedBox.shrink(),
+                        ],
+                      ),
+                      Divider(
+                        color: Colors.black,
+                        height: 50.0,
+                        thickness: 1.5,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          _temperatureLabel(),
+                          userProvider.isOwnerOnThisProduct(currentProduct.roleIDs)
+                              ? Text(temperature.toString(),
+                                  style: TextStyle(fontSize: 20))
+                              : SizedBox.shrink(),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              onRefresh: () => _fetchDataAgain(currentProduct, user),
             ),
             drawer: CustomDrawer(),
           );
   }
 
+  // Get the data from IoT device when scrolled down
+  Future<void> _fetchDataAgain(Product currentProduct, User user) async {
+    await Provider.of<ProductProvider>(context, listen: false)
+        .fetchAndGetProductStatus(currentProduct.productCode, user.email)
+        .then((value) {
+      status = fromIntToBool(value["light"].toInt());
+      temperature = value["temp"];
+      print("Refetched temp: " + temperature.toString());
+    });
+  }
+
+  // Light
+  Container _lightLabel() {
+    return Container(
+      child: Text(
+        "Living Room - Light 1",
+        style: TextStyle(
+          fontSize: 17,
+        ),
+      ),
+    );
+  }
+
+  // Temperature
+  Container _temperatureLabel() {
+    return Container(
+      child: Text(
+        "Temperature",
+        style: TextStyle(
+          fontSize: 17,
+        ),
+      ),
+    );
+  }
+
   // Light Switch
   Widget _switch(BuildContext context, User user, Product product) {
     return _isSwitchLoading
-        ? Center(child: CircularProgressIndicator())
+        ? Container(
+          child: Center(child: CircularProgressIndicator()),
+          color: Colors.white,
+        )
         : FlutterSwitch(
             value: status,
             onToggle: (val) async {
@@ -152,7 +213,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               command["light"] = fromBoolToInt(val);
 
               String formattedCommand = json.encode(command);
-              bool response = await sendCommand(formattedCommand, user.email, product.productCode);
+              bool response = await sendCommand(
+                  formattedCommand, user.email, product.productCode);
 
               // Loading ends
               setState(() {
@@ -161,8 +223,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
               if (response) {
                 status = val;
-              }
-              else {
+              } else {
                 _popupWindow(context);
               }
             },

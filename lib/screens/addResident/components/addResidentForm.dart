@@ -77,7 +77,10 @@ class _AddResidentFormState extends State<AddResidentForm> {
   // 'Add New Resident' Button
   Widget _addNewResidentButton(User currentUser, Product defaultProduct) {
     return isLoading
-        ? Center(child: CircularProgressIndicator())
+        ? Container(
+          child: Center(child: CircularProgressIndicator()),
+          color: Colors.white,
+        )
         : DefaultButton(
             text: "Add a New Resident",
             buttonType: "Green",

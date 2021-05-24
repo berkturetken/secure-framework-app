@@ -60,7 +60,10 @@ class _ResidentSignUpFormState extends State<ResidentSignUpForm> {
   // 'Create an Account' Button
   Widget _createAnAccountButton() {
     return isLoading
-        ? Center(child: CircularProgressIndicator())
+        ? Container(
+          child: Center(child: CircularProgressIndicator()),
+          color: Colors.white,
+        )
         : DefaultButton(
             text: "Create an Account",
             press: () async {

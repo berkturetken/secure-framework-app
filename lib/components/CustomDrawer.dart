@@ -142,6 +142,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
     await storage.deleteAll();
     userProvider.deleteCurrentUser();
     print("Logging out from the app...");
-    Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+    Navigator.of(context).pushNamedAndRemoveUntil(LoginScreen.routeName, (Route<dynamic> route) => false);
   }
 }

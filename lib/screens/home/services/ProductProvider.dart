@@ -46,7 +46,7 @@ class ProductProvider with ChangeNotifier {
 
     encryptedProducts = jsonResponseFromGetProducts["message"];
     plainText = await verifyAndExtractIncommingMessages(encryptedProducts);
-    // plainText = Decrypted products
+    // plainText: Decrypted products
     decodedPlainText = jsonDecode(plainText);
 
     for (var i = 0; i < decodedPlainText.length; i++) {
@@ -68,13 +68,13 @@ class ProductProvider with ChangeNotifier {
 
     // Null check
     if (jsonResponseFromGetStatus == null) {
-      print("JsonResponseFromGetStatus is null...");
+      print("JsonResponseFromGetStatus is null in getProductStatus...");
       return decodedPlainText;
     }
 
     // Unsuccessful return check
     if(jsonResponseFromGetStatus["statusCode"] != 200) {
-      print("Status code is NOT 200...");
+      print("Status code is NOT 200 in getProductStatus...");
       return decodedPlainText;
     }
 
@@ -83,12 +83,44 @@ class ProductProvider with ChangeNotifier {
     decodedPlainText = jsonDecode(plainText);
     print("Decoded version: $decodedPlainText");
 
-    decodedPlainText.forEach((key, value) {
-      print("Key: " + key);
-      print("Value: " + value.toString());
+    decodedPlainText["info"].forEach((key, value) {
+      print("Key in getStatus: " + key);
+      print("Value in getStatus: " + value.toString());
     });
+    print("Timestamp: " + decodedPlainText["timeStamp"]);
+    notifyListeners();
+    return decodedPlainText["info"];
+  }
+  
+  Future<List<dynamic>> fetchAndGetUsers(String productCode, String email) async {
+    String encryptedUsers, plainText;
+    List<dynamic> decodedPlainText;
+    Map users = {};
+    Map jsonResponseFromGetUsers = await getUsers(productCode, email);
+
+    // Null check
+    if (jsonResponseFromGetUsers == null) {
+      print("JsonResponseFromGetUsers is null...");
+      return decodedPlainText;
+    }
+
+    // Unsuccessful return check
+    if (jsonResponseFromGetUsers["statusCode"] != 200) {
+      print("Status code is NOT 200 in getUsers...");
+      return decodedPlainText;
+    }
+
+    encryptedUsers = jsonResponseFromGetUsers["message"];
+    plainText = await verifyAndExtractIncommingMessages(encryptedUsers);
+    decodedPlainText = jsonDecode(plainText);
+    /*
+    for (var i = 0; i < decodedPlainText.length; i++) {
+      users["email"] = decodedPlainText[i]["email"];
+      users["roleId"] = decodedPlainText[i]["roleId"];
+    }
+    */
     notifyListeners();
     return decodedPlainText;
   }
-  
+
 }
