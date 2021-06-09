@@ -128,3 +128,23 @@ Future<Map> deleteResident(String email, String deletedEmail, String message) as
   return responseJson;
 }
 
+Future<Map> addProduct(String email, String message) async {
+  var responseJson;
+  final body = {
+    "email": email,
+    "message": message
+  };
+  final jsonString = json.encode(body);
+  
+  try {
+    final response = await http.post(
+      'https://h24q9fa19h.execute-api.eu-central-1.amazonaws.com/test/add-product',
+      body: jsonString
+    );
+    responseJson = jsonDecode(response.body);
+    print(responseJson);
+  } on Exception catch(_) {
+    print("Exception occurs in addProduct() - operationsRepo...");
+  }
+  return responseJson;
+}

@@ -71,7 +71,7 @@ class ProductProvider with ChangeNotifier {
       print("JsonResponseFromGetStatus is null in getProductStatus...");
       return decodedPlainText;
     }
-
+    
     // Unsuccessful return check
     if(jsonResponseFromGetStatus["statusCode"] != 200) {
       print("Status code is NOT 200 in getProductStatus...");
@@ -87,9 +87,9 @@ class ProductProvider with ChangeNotifier {
       print("Key in getStatus: " + key);
       print("Value in getStatus: " + value.toString());
     });
-    print("Timestamp: " + decodedPlainText["timeStamp"]);
+
     notifyListeners();
-    return decodedPlainText["info"];
+    return decodedPlainText;
   }
   
   Future<List<dynamic>> fetchAndGetUsers(String productCode, String email) async {

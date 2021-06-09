@@ -33,13 +33,6 @@ class _LoginFormState extends State<LoginForm> {
           SizedBox(height: 20),
           buildPasswordFormField(),
           SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text("Forgot your password?",
-                  style: TextStyle(decoration: TextDecoration.underline)),
-            ],
-          ),
           FormError(errors: errors),
           SizedBox(height: 20),
           _loginButton(),

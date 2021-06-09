@@ -11,8 +11,11 @@ import 'package:secure_framework_app/screens/login/services/UserData.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:secure_framework_app/screens/home/services/ProductData.dart';
 
-Future<dynamic> clickAddNewResident(String currentUserEmail, String message) async {
+Future<List> clickAddNewResident(String currentUserEmail, String message) async {
   final storage = Storage;
+  String returnedCiphertext, plainMessage;
+  int statusCode;
+  List<dynamic> response = [];
   String aesKey = await storage.read(key: "AES-Key");
   String iv = await storage.read(key: "IV");
   String hmacKey = await storage.read(key: "HMAC-Key");
@@ -23,7 +26,13 @@ Future<dynamic> clickAddNewResident(String currentUserEmail, String message) asy
   String arrangedCommand = arrangeCommand(encryptedMessage, message, hmacKey);
 
   Map jsonResponseFromAddNewResident = await addNewResident(currentUserEmail, arrangedCommand);
-  return jsonResponseFromAddNewResident;
+  //TODO: Check the response whether it is "NULL" or "NOT 200"!
+  statusCode = jsonResponseFromAddNewResident["statusCode"];
+  returnedCiphertext = jsonResponseFromAddNewResident["message"];
+  plainMessage = await verifyAndExtractIncommingMessages(returnedCiphertext);
+  response.add(statusCode);
+  response.add(plainMessage);
+  return response;
 }
 
 class AddResidentForm extends StatefulWidget {
@@ -99,7 +108,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
                 var data = {'email': email, 'productCode': productCode};
                 String formattedData = jsonEncode(data);
 
-                dynamic response = await clickAddNewResident(currentUser.email, formattedData);
+                List<dynamic> response = await clickAddNewResident(currentUser.email, formattedData);
 
                 setState(() {
                   isLoading = false;
@@ -107,7 +116,7 @@ class _AddResidentFormState extends State<AddResidentForm> {
                 _popupWindow(context, response);
 
                 // Clear the input fields if user is added successfully
-                if (response["statusCode"] == 200) {
+                if (response[0] == 200) {
                   emailTextField.clear();
                 }
               }
@@ -120,8 +129,10 @@ class _AddResidentFormState extends State<AddResidentForm> {
     // Return Codes are as follows
     // 200: User added to the database
     // 400: User is already in the system
-    int returnCode = response["statusCode"];
-    String returnMessage = response["message"];
+    int returnCode = response[0];
+    String returnMessage = response[1];
+    // String manipulation
+    returnMessage = returnMessage.substring(1, returnMessage.length-1);
     Alert(
       context: context,
       title: returnCode == 200 ? "Great :)" : "Sorry :(",

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:secure_framework_app/components/CustomDrawer.dart';
 import 'package:provider/provider.dart';
@@ -12,9 +11,11 @@ import 'package:secure_framework_app/screens/home/services/ProductProvider.dart'
 import 'package:secure_framework_app/components/constants.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
-Future<dynamic> clickDeleteResident(
-    String email, String deletedEmail, String productCode) async {
+Future<List> clickDeleteResident(String email, String deletedEmail, String productCode) async {
   final storage = Storage;
+  String returnedCiphertext, plainMessage;
+  int statusCode;
+  List<dynamic> response = [];
   String aesKey = await storage.read(key: "AES-Key");
   String iv = await storage.read(key: "IV");
   String hmacKey = await storage.read(key: "HMAC-Key");
@@ -22,11 +23,15 @@ Future<dynamic> clickDeleteResident(
   String encryptedMessage = encryptionAES(productCode, aesKey, iv);
   print("Encrypted Message in manage product screen: " + encryptedMessage);
 
-  String arrangedCommand =
-      arrangeCommand(encryptedMessage, productCode, hmacKey);
-  Map jsonResponseFromDeleteResident =
-      await deleteResident(email, deletedEmail, arrangedCommand);
-  return jsonResponseFromDeleteResident;
+  String arrangedCommand = arrangeCommand(encryptedMessage, productCode, hmacKey);
+  Map jsonResponseFromDeleteResident = await deleteResident(email, deletedEmail, arrangedCommand);
+
+  statusCode = jsonResponseFromDeleteResident["statusCode"];
+  returnedCiphertext = jsonResponseFromDeleteResident["message"];
+  plainMessage = await verifyAndExtractIncommingMessages(returnedCiphertext);
+  response.add(statusCode);
+  response.add(plainMessage);
+  return response;
 }
 
 class ManageProductScreen extends StatefulWidget {
@@ -40,6 +45,7 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
   bool _isInit = true;
   bool _isLoading = false;
   List<dynamic> tempList;
+  final key = new GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
@@ -75,7 +81,6 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    User currentUser = userProvider.user;
     final arguments = ModalRoute.of(context).settings.arguments;
     Product currentProduct = arguments;
 
@@ -85,6 +90,7 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
             color: Colors.white,
           )
         : Scaffold(
+            key: key,
             appBar: AppBar(
               centerTitle: true,
               title: Text("Manage Your Product"),
@@ -127,8 +133,7 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
   }
 
   // Users Card
-  Widget _usersCard(BuildContext context, var users, UserProvider userProvider,
-      Product currentProduct) {
+  Widget _usersCard(BuildContext context, var users, UserProvider userProvider, Product currentProduct) {
     return Card(
       elevation: 6.0,
       margin: EdgeInsets.fromLTRB(0, 0, 0, 30),
@@ -149,7 +154,7 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
               style: TextStyle(color: getColor(users["roleId"])),
             ),
           ),
-          userProvider.isOwnerOnThisProduct(currentProduct.roleIDs)
+          userProvider.isOwnerOnThisProduct(currentProduct.roleIDs) && users["roleId"] != 2
               ? Row(
                   children: <Widget>[
                     _deleteResidentButton(
@@ -163,8 +168,7 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
   }
 
   // 'Delete Resident' Button
-  Padding _deleteResidentButton(
-      User currentUser, String deletedEmail, Product currentProduct) {
+  Padding _deleteResidentButton(User currentUser, String deletedEmail, Product currentProduct) {
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 0, 0, 10),
       child: OutlinedButton.icon(
@@ -180,7 +184,6 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
           ),
         ),
         onPressed: () {
-          print("Clicked 'Remove Resident'");
           _popupWindow(context, currentUser, deletedEmail, currentProduct);
         },
       ),
@@ -188,8 +191,7 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
   }
 
   // Pop-up window
-  _popupWindow(BuildContext context, User currentUser, String deletedEmail,
-      Product currentProduct) {
+  _popupWindow(BuildContext context, User currentUser, String deletedEmail, Product currentProduct) {
     Alert(
       context: context,
       title: "Removing a resident...",
@@ -198,12 +200,29 @@ class _ManageProductScreenState extends State<ManageProductScreen> {
         DialogButton(
           onPressed: () async {
             String formattedData = jsonEncode(currentProduct.productCode);
-            print("Pressed product code: " + currentProduct.productCode);
-            dynamic response = await clickDeleteResident(
-                currentUser.email, deletedEmail, formattedData);
+            List<dynamic> response = await clickDeleteResident(currentUser.email, deletedEmail, formattedData);
+            String returnedMessage = response[1];
+            // String manipulation
+            returnedMessage = returnedMessage.substring(1, returnedMessage.length-1);
 
-            print("Delete operation is handled...");
-            // Navigator.pop(context)
+            // TODO: Add circular progress indicator!
+            
+            Navigator.pop(context);
+            final snackBar = SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(returnedMessage),
+              action: SnackBarAction(
+                label: "OK",
+                onPressed: () {
+                  print("'OK' is clicked");
+                },
+              ),
+            );
+            key.currentState.showSnackBar(snackBar);
+            //TODO: Change below 3 lines if you find a better approach! This one is not a good one...
+            await Future.delayed(Duration(seconds: 2));
+            Navigator.pop(context);
+            Navigator.of(context).pushNamed(ManageProductScreen.routeName, arguments: currentProduct);
           },
           color: Colors.red[800],
           child: Text(
